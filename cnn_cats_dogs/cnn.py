@@ -44,7 +44,7 @@ classifier.add(Dense(units=128, activation='relu'))
 
 # ------------------------------------------------------------------------------------------------------------
 # Adding hidden layers here
-classifier.add(Dense(units = 6, activation = 'relu'))
+classifier.add(Dense(units = 128, activation = 'relu'))
 
 
 # ------------------------------------------------------------------------------------------------------------
