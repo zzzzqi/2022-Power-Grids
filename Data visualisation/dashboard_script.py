@@ -365,7 +365,8 @@ def dynamic_env(df):
 
     ## ========================================================
     ## Return the dashboard's dynamic panes
-    return pn.Row(
+    return pn.Tabs(
+        ("Data-exploration", pn.Row(
             pn.Column(
                 algo_column,
                 plot_configuration
@@ -373,7 +374,8 @@ def dynamic_env(df):
             pn.Column(
                 data_exploration
             )
-        )
+        ))
+    )
 
 ## ========================================================
 ## Add the dynamic panes to the dashboard
