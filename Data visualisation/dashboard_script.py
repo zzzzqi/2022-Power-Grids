@@ -2,6 +2,7 @@ import io
 import panel as pn
 import numpy as np
 import pandas as pd
+import altair as alt
 import holoviews as hv
 import hvplot.pandas # noqa
 from hvplot import hvPlot
@@ -13,7 +14,7 @@ import umap.umap_ as umap
 
 # Enable Bokeh and Panel
 hv.extension('bokeh')
-pn.extension()
+pn.extension('vega')
 
 ## ========================================================
 ## Build the layout of the dashboard
@@ -48,8 +49,10 @@ app.sidebar.append(file_input)
 @pn.depends(file_input)
 def dynamic_env(df):
     if df is None:
-        metadata_df = pd.DataFrame(np.random.uniform(0, 1, size=(500, 60)), columns=list(range(0, 60)))
-        df = pd.DataFrame(np.random.uniform(0, 1, size=(500, 60)), columns=["dummy_axis" + str(i) for i in range(0, 60)])
+        metadata_columns = ["metadata_dummy_axis" + str(i) for i in range(0, 5)]
+        metadata_columns[0] = "event_id"
+        metadata_df = pd.DataFrame(np.random.uniform(0, 1, size=(100, 5)), columns=metadata_columns)
+        df = pd.DataFrame(np.random.uniform(0, 1, size=(100, 60)), columns=["dummy_axis" + str(i) for i in range(0, 60)])
     else:
         metadata_df = pd.read_csv(io.BytesIO(file_input.value), header=0, usecols=range(1, 5))
         df = pd.read_csv(io.BytesIO(file_input.value), header=0, usecols=range(6, 66))
@@ -244,28 +247,63 @@ def dynamic_env(df):
                         dbscan_max_distance_value, dbscan_n_samples_value):
         if dr_value == "Nil" and clustering_value == "Nil":
             selected_df = basic_df[[basic_x_value, basic_y_value]]
-            return selected_df.hvplot.scatter(
-                x=basic_x_value,
-                y=basic_y_value,
-                height=650,
+            selected_df = pd.concat([metadata_df, selected_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_point().encode(
+                x=alt.X(basic_x_value, scale=alt.Scale(domain=[-0.1, 1.1])),
+                y=alt.Y(basic_y_value, scale=alt.Scale(domain=[-0.1, 1.1])),
+                color=alt.condition(selector, alt.value("black"), alt.value('lightgray')),
+                tooltip=["event_id", basic_x_value, basic_y_value]
+            ).properties(
+                height=600,
                 width=700,
-                title="Data-exploration pane"
+                title="Data-exploraton pane"
+            ).interactive().add_selection(selector)
+            v_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event_id(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return selected_df.iloc[selection[0] - 1]
+
+            return pn.Tabs(
+                ("Data-exploration pane", v_pane),
+                ("Power signal event", pn.Column(
+                        pn.bind(get_event_id, v_pane.selection.param.event_id)
+                    )
+                )
             )
         elif dr_value == "PCA" and clustering_value == "Nil":
-            return pca_df.hvplot.scatter(
+            plot = pca_df.hvplot.scatter(
                 x=pca_x_value,
                 y=pca_y_value,
                 height=650,
                 width=700,
                 title="Data-exploration pane"
             )
+            return pn.Tabs(
+                ("Data-exploration pane", plot),
+                ("Power signal event", pn.Column(
+                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                    )
+                )
+            )
         elif dr_value == "UMAP" and clustering_value == "Nil":
-            return umap_df.hvplot.scatter(
+            plot = umap_df.hvplot.scatter(
                 x=umap_x_value,
                 y=umap_y_value,
                 height=650,
                 width=700,
                 title="Data-exploration pane"
+            )
+            return pn.Tabs(
+                ("Data-exploration pane", plot),
+                ("Power signal event", pn.Column(
+                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                    )
+                )
             )
         elif dr_value == "Nil" and clustering_value == "K-Means":
             basic_kmeans = KMeans(n_clusters=k_means_n_clusters)
@@ -282,7 +320,13 @@ def dynamic_env(df):
                 title="Data-exploration pane"
             )
             # Add overlay for centroids
-            return plot
+            return pn.Tabs(
+                ("Data-exploration pane", plot),
+                ("Power signal event", pn.Column(
+                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                    )
+                )
+            )
         elif dr_value == "PCA" and clustering_value == "K-Means":
             pca_kmeans = KMeans(n_clusters=k_means_n_clusters)
             y_pred = pca_kmeans.fit_predict(pca_df)
@@ -297,7 +341,13 @@ def dynamic_env(df):
                 title="Data-exploration pane"
             )
             # Add overlay for centroids
-            return plot
+            return pn.Tabs(
+                ("Data-exploration pane", plot),
+                ("Power signal event", pn.Column(
+                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                    )
+                )
+            )
         elif dr_value == "UMAP" and clustering_value == "K-Means":
             umap_kmeans = KMeans(n_clusters=k_means_n_clusters)
             y_pred = umap_kmeans.fit_predict(umap_df)
@@ -312,7 +362,13 @@ def dynamic_env(df):
                 title="Data-exploration pane"
             )
             # Add overlay for centroids
-            return plot
+            return pn.Tabs(
+                ("Data-exploration pane", plot),
+                ("Power signal event", pn.Column(
+                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                    )
+                )
+            )
         elif dr_value == "Nil" and clustering_value == "DBSCAN":
             basic_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
             selected_df = basic_df[[basic_x_value, basic_y_value]]
@@ -329,7 +385,13 @@ def dynamic_env(df):
                 title="Data-exploration pane"
             )
             # Add overlay for centroids
-            return plot
+            return pn.Tabs(
+                ("Data-exploration pane", plot),
+                ("Power signal event", pn.Column(
+                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                    )
+                )
+            )
         elif dr_value == "PCA" and clustering_value == "DBSCAN":
             pca_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
             y_pred = pca_dbscan.fit_predict(pca_df)
@@ -345,7 +407,13 @@ def dynamic_env(df):
                 title="Data-exploration pane"
             )
             # Add overlay for centroids
-            return plot
+            return pn.Tabs(
+                ("Data-exploration pane", plot),
+                ("Power signal event", pn.Column(
+                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                    )
+                )
+            )
         elif dr_value == "UMAP" and clustering_value == "DBSCAN":
             umap_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
             y_pred = umap_dbscan.fit_predict(umap_df)
@@ -361,20 +429,24 @@ def dynamic_env(df):
                 title="Data-exploration pane"
             )
             # Add overlay for centroids
-            return plot
+            return pn.Tabs(
+                ("Data-exploration pane", plot),
+                ("Power signal event", pn.Column(
+                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                    )
+                )
+            )
 
     ## ========================================================
     ## Return the dashboard's dynamic panes
-    return pn.Tabs(
-        ("Data-exploration", pn.Row(
-            pn.Column(
-                algo_column,
-                plot_configuration
-            ),
-            pn.Column(
-                data_exploration
-            )
-        ))
+    return pn.Row(
+        pn.Column(
+            algo_column,
+            plot_configuration
+        ),
+        pn.Column(
+            data_exploration
+        )
     )
 
 ## ========================================================
