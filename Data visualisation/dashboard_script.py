@@ -245,194 +245,327 @@ def dynamic_env(df):
                         umap_x_value, umap_y_value,
                         k_means_n_clusters,
                         dbscan_max_distance_value, dbscan_n_samples_value):
+        # Option A: No dimensionality reduction nor clustering algos
         if dr_value == "Nil" and clustering_value == "Nil":
             selected_df = basic_df[[basic_x_value, basic_y_value]]
             selected_df = pd.concat([metadata_df, selected_df], axis=1)
 
             selector = alt.selection_single(name='event_id')
-            plot = alt.Chart(selected_df).mark_point().encode(
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
                 x=alt.X(basic_x_value, scale=alt.Scale(domain=[-0.1, 1.1])),
                 y=alt.Y(basic_y_value, scale=alt.Scale(domain=[-0.1, 1.1])),
-                color=alt.condition(selector, alt.value("black"), alt.value('lightgray')),
+                color=alt.condition(selector, alt.value("navy"), alt.value('lightgray')),
                 tooltip=["event_id", basic_x_value, basic_y_value]
             ).properties(
-                height=600,
+                height=630,
                 width=700,
                 title="Data-exploraton pane"
             ).interactive().add_selection(selector)
-            v_pane = pn.pane.Vega(plot, debounce=10)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
 
-            def get_event_id(selection):
+            def get_event(selection):
                 if not selection:
                     return '## No selection'
                 else:
                     return selected_df.iloc[selection[0] - 1]
 
             return pn.Tabs(
-                ("Data-exploration pane", v_pane),
+                ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                        pn.bind(get_event_id, v_pane.selection.param.event_id)
+                        pn.bind(get_event, vega_pane.selection.param.event_id)
                     )
                 )
             )
+        # Option B: PCA and no clustering algo
         elif dr_value == "PCA" and clustering_value == "Nil":
-            plot = pca_df.hvplot.scatter(
+            selected_df = pd.concat([metadata_df, pca_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
                 x=pca_x_value,
                 y=pca_y_value,
-                height=650,
+                color=alt.condition(selector, alt.value("navy"), alt.value('lightgray')),
+                tooltip=["event_id", pca_x_value, pca_y_value]
+            ).properties(
+                height=630,
                 width=700,
-                title="Data-exploration pane"
-            )
+                title="Data-exploraton pane"
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return selected_df.iloc[selection[0] - 1]
+
             return pn.Tabs(
-                ("Data-exploration pane", plot),
+                ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                        pn.bind(get_event, vega_pane.selection.param.event_id)
                     )
                 )
             )
+        # Option C: UMAP and no clustering algo
         elif dr_value == "UMAP" and clustering_value == "Nil":
-            plot = umap_df.hvplot.scatter(
+            selected_df = pd.concat([metadata_df, umap_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
                 x=umap_x_value,
                 y=umap_y_value,
-                height=650,
+                color=alt.condition(selector, alt.value("navy"), alt.value('lightgray')),
+                tooltip=["event_id", umap_x_value, umap_y_value]
+            ).properties(
+                height=630,
                 width=700,
-                title="Data-exploration pane"
-            )
+                title="Data-exploraton pane"
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return selected_df.iloc[selection[0] - 1]
+
             return pn.Tabs(
-                ("Data-exploration pane", plot),
+                ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                        pn.bind(get_event, vega_pane.selection.param.event_id)
                     )
                 )
             )
+        # Opton D: No dimensionality reduction and K-Means clustering algo
         elif dr_value == "Nil" and clustering_value == "K-Means":
             basic_kmeans = KMeans(n_clusters=k_means_n_clusters)
             selected_df = basic_df[[basic_x_value, basic_y_value]]
             y_pred = basic_kmeans.fit_predict(selected_df)
 
-            plot = selected_df.hvplot.scatter(
-                x=basic_x_value,
-                y=basic_y_value,
-                c=y_pred,
-                cmap="rainbow",
-                height=650,
+            y_pred_df = pd.DataFrame(data={"cluster":y_pred})
+            selected_df = pd.concat([metadata_df, selected_df, y_pred_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
+                x=alt.X(basic_x_value, scale=alt.Scale(domain=[-0.1, 1.1])),
+                y=alt.Y(basic_y_value, scale=alt.Scale(domain=[-0.1, 1.1])),
+                color=alt.condition(
+                    selector, 
+                    alt.Color('cluster:N', scale=alt.Scale(scheme='set1'), legend=None), 
+                    alt.value('lightgray')),
+                tooltip=["event_id", basic_x_value, basic_y_value, "cluster"]
+            ).properties(
+                height=630,
                 width=700,
-                title="Data-exploration pane"
-            )
+                title="Data-exploraton pane"
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return selected_df.iloc[selection[0] - 1]
+
             # Add overlay for centroids
             return pn.Tabs(
-                ("Data-exploration pane", plot),
+                ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                        pn.bind(get_event, vega_pane.selection.param.event_id)
                     )
                 )
             )
+        # Option E: PCA and K-Means
         elif dr_value == "PCA" and clustering_value == "K-Means":
             pca_kmeans = KMeans(n_clusters=k_means_n_clusters)
             y_pred = pca_kmeans.fit_predict(pca_df)
 
-            plot = pca_df.hvplot.scatter(
+            y_pred_df = pd.DataFrame(data={"cluster":y_pred})
+            selected_df = pd.concat([metadata_df, pca_df, y_pred_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
                 x=pca_x_value,
                 y=pca_y_value,
-                c=y_pred,
-                cmap="rainbow",
-                height=650,
+                color=alt.condition(
+                    selector, 
+                    alt.Color('cluster:N', scale=alt.Scale(scheme='set1'), legend=None), 
+                    alt.value('lightgray')),
+                tooltip=["event_id", pca_x_value, pca_y_value, "cluster"]
+            ).properties(
+                height=630,
                 width=700,
-                title="Data-exploration pane"
-            )
+                title="Data-exploraton pane"
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return selected_df.iloc[selection[0] - 1]
+
             # Add overlay for centroids
             return pn.Tabs(
-                ("Data-exploration pane", plot),
+                ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                        pn.bind(get_event, vega_pane.selection.param.event_id)
                     )
                 )
             )
+        # Option F: UMAP and K-Means
         elif dr_value == "UMAP" and clustering_value == "K-Means":
             umap_kmeans = KMeans(n_clusters=k_means_n_clusters)
             y_pred = umap_kmeans.fit_predict(umap_df)
             
-            plot = umap_df.hvplot.scatter(
+            y_pred_df = pd.DataFrame(data={"cluster":y_pred})
+            selected_df = pd.concat([metadata_df, umap_df, y_pred_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
                 x=umap_x_value,
                 y=umap_y_value,
-                c=y_pred,
-                cmap="rainbow",
-                height=650,
+                color=alt.condition(
+                    selector, 
+                    alt.Color('cluster:N', scale=alt.Scale(scheme='set1'), legend=None), 
+                    alt.value('lightgray')),
+                tooltip=["event_id", umap_x_value, umap_y_value, "cluster"]
+            ).properties(
+                height=630,
                 width=700,
-                title="Data-exploration pane"
-            )
+                title="Data-exploraton pane"
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return selected_df.iloc[selection[0] - 1]
+
             # Add overlay for centroids
             return pn.Tabs(
-                ("Data-exploration pane", plot),
+                ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                        pn.bind(get_event, vega_pane.selection.param.event_id)
                     )
                 )
             )
+        # Option G: No dimensionality reduction algo and DBSCAN clustering algo
         elif dr_value == "Nil" and clustering_value == "DBSCAN":
             basic_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
             selected_df = basic_df[[basic_x_value, basic_y_value]]
             y_pred = basic_dbscan.fit_predict(selected_df)
             labels = basic_dbscan.labels_
 
-            plot = selected_df.hvplot.scatter(
-                x=basic_x_value,
-                y=basic_y_value,
-                c=y_pred,
-                cmap="bmw",
-                height=650,
+            y_pred_df = pd.DataFrame(data={"cluster":y_pred})
+            selected_df = pd.concat([metadata_df, selected_df, y_pred_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
+                x=alt.X(basic_x_value, scale=alt.Scale(domain=[-0.1, 1.1])),
+                y=alt.Y(basic_y_value, scale=alt.Scale(domain=[-0.1, 1.1])),
+                color=alt.condition(
+                    selector, 
+                    alt.Color('cluster:N', scale=alt.Scale(scheme='set1'), legend=None), 
+                    alt.value('lightgray')),
+                tooltip=["event_id", basic_x_value, basic_y_value, "cluster"]
+            ).properties(
+                height=630,
                 width=700,
-                title="Data-exploration pane"
-            )
+                title="Data-exploraton pane"
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return selected_df.iloc[selection[0] - 1]
+
             # Add overlay for centroids
             return pn.Tabs(
-                ("Data-exploration pane", plot),
+                ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                        pn.bind(get_event, vega_pane.selection.param.event_id)
                     )
                 )
             )
+        # Option H: PCA and DBSCAN
         elif dr_value == "PCA" and clustering_value == "DBSCAN":
             pca_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
             y_pred = pca_dbscan.fit_predict(pca_df)
             labels = pca_dbscan.labels_
 
-            plot = pca_df.hvplot.scatter(
+            y_pred_df = pd.DataFrame(data={"cluster":y_pred})
+            selected_df = pd.concat([metadata_df, pca_df, y_pred_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
                 x=pca_x_value,
                 y=pca_y_value,
-                c=y_pred,
-                cmap="bmw",
-                height=650,
+                color=alt.condition(
+                    selector, 
+                    alt.Color('cluster:N', scale=alt.Scale(scheme='set1'), legend=None), 
+                    alt.value('lightgray')),
+                tooltip=["event_id", pca_x_value, pca_y_value, "cluster"]
+            ).properties(
+                height=630,
                 width=700,
-                title="Data-exploration pane"
-            )
+                title="Data-exploraton pane"
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return selected_df.iloc[selection[0] - 1]
+
             # Add overlay for centroids
             return pn.Tabs(
-                ("Data-exploration pane", plot),
+                ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                        pn.bind(get_event, vega_pane.selection.param.event_id)
                     )
                 )
             )
+        # Option I: UMAP and DBSCAN
         elif dr_value == "UMAP" and clustering_value == "DBSCAN":
             umap_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
             y_pred = umap_dbscan.fit_predict(umap_df)
             labels = umap_dbscan.labels_
-            
-            plot = umap_df.hvplot.scatter(
+
+            y_pred_df = pd.DataFrame(data={"cluster":y_pred})
+            selected_df = pd.concat([metadata_df, umap_df, y_pred_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
                 x=umap_x_value,
                 y=umap_y_value,
-                c=y_pred,
-                cmap="bmw",
-                height=650,
+                color=alt.condition(
+                    selector, 
+                    alt.Color('cluster:N', scale=alt.Scale(scheme='set1'), legend=None), 
+                    alt.value('lightgray')),
+                tooltip=["event_id", umap_x_value, umap_y_value, "cluster"]
+            ).properties(
+                height=630,
                 width=700,
-                title="Data-exploration pane"
-            )
+                title="Data-exploraton pane"
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return selected_df.iloc[selection[0] - 1]
+
             # Add overlay for centroids
             return pn.Tabs(
-                ("Data-exploration pane", plot),
+                ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                        # pn.bind(get_event_id, v_pane.selection.param.event_id)
+                        pn.bind(get_event, vega_pane.selection.param.event_id)
                     )
                 )
             )
