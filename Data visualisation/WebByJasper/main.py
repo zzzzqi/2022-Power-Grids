@@ -471,11 +471,6 @@ def dynamic_env(df):
                 if not selection:
                     return '## No selection'
                 else:
-                    print(vega_pane.selection.param.event_id)
-                    print(selection)
-                    print(type(selection))
-                    # print(type(get_event))
-                    # print(selected_df.iloc[selection[0] - 1])
                     return selected_df.iloc[selection[0] - 1]
 
             return pn.Tabs(
@@ -511,7 +506,7 @@ def dynamic_env(df):
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                    pn.bind(get_event, vega_pane.selection.param.event_id)
+                    event_page_layout
                 )
                  )
             )
@@ -550,7 +545,7 @@ def dynamic_env(df):
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                    pn.bind(get_event, vega_pane.selection.param.event_id)
+                    event_page_layout
                 )
                  )
             )
@@ -588,7 +583,7 @@ def dynamic_env(df):
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                    pn.bind(get_event, vega_pane.selection.param.event_id)
+                    event_page_layout
                 )
                  )
             )
@@ -626,7 +621,7 @@ def dynamic_env(df):
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                    pn.bind(get_event, vega_pane.selection.param.event_id)
+                    event_page_layout
                 )
                  )
             )
@@ -666,7 +661,7 @@ def dynamic_env(df):
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                    pn.bind(get_event, vega_pane.selection.param.event_id)
+                    event_page_layout
                 )
                  )
             )
@@ -705,7 +700,7 @@ def dynamic_env(df):
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                    pn.bind(get_event, vega_pane.selection.param.event_id)
+                    event_page_layout
                 )
                  )
             )
@@ -744,7 +739,7 @@ def dynamic_env(df):
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.Column(
-                    pn.bind(get_event, vega_pane.selection.param.event_id)
+                    event_page_layout
                 )
                  )
             )
