@@ -240,16 +240,31 @@ def dynamic_env(df):
     ## Column 2: The data-exploration pane
 
     # Build the event_page
+
+    Head_Selected_Waveform = """
+    ###    Six Waveforms of Selected Event :
+    """
+
+    Head_Selected_Details = """
+    ###    Details of Selected Event :
+    """
+    Head_Similar_Events = """
+        ###    Similar events :
+        """
+
     df_event_page = pd.read_csv("flickers_sample00.csv", header=0, engine='python')
 
     event_id_1 = pn.widgets.StaticText(value='event_id:', width=50, align='center')
-    event_id_2 = pn.widgets.StaticText(value='001', width=20, align='center')
+    event_id_2 = pn.widgets.StaticText(value='001', width=10, align='center')
     start_time_1 = pn.widgets.StaticText(value='start_time:', width=60, align='center')
     start_time_2 = pn.widgets.StaticText(value='2022_06_01', width=60, align='center')
-    asset_name_1 = pn.widgets.StaticText(value='asset_name:', width=60, align='center')
-    asset_name_2 = pn.widgets.StaticText(value='test_000', width=60, align='center')
+    asset_name_1 = pn.widgets.StaticText(value='asset_name:', width=70, align='center')
+    asset_name_2 = pn.widgets.StaticText(value='test_000', width=70, align='center')
 
-    event_page_event_detail = pn.Row(event_id_1, event_id_2, start_time_1, start_time_2, asset_name_1, asset_name_2)
+    Layout_details = pn.Column(Head_Selected_Details,
+                               pn.Row(event_id_1, event_id_2, start_time_1, start_time_2, asset_name_1, asset_name_2))
+
+    event_page_event_detail = pn.WidgetBox(Layout_details, width=860)
 
     Vab_waveform = df_event_page.hvplot.line(
         x='timestamps (in ms)',
@@ -350,17 +365,6 @@ def dynamic_env(df):
         'ticks': fontsize_value,
     })
 
-    Head_Selected_Waveform = """
-    ###    Six Waveforms of Selected Event
-    """
-
-    Head_Selected_Details = """
-    ###    Details of Selected Event
-    """
-    Head_Similar_Events = """
-        ###    Similar events :
-        """
-
     df_similar_event = pd.DataFrame({
         'Event_Id': ['Event ' + str(x) for x in range(0, 10)],
         'Sag': [bool(random.randint(0, 1)) for _ in range(10)],
@@ -374,7 +378,6 @@ def dynamic_env(df):
         'Interruption & Harmonic': [bool(random.randint(0, 1)) for _ in range(10)],
         'Swell & Harmonic': [bool(random.randint(0, 1)) for _ in range(10)],
     })
-
 
     bokeh_formatters = {
         'Sag': BooleanFormatter(),
@@ -392,18 +395,17 @@ def dynamic_env(df):
     similar_event_widget = pn.widgets.Tabulator(df_similar_event, formatters=bokeh_formatters,
                                                 show_index=False,
                                                 widths={'Event_Id': '12%', 'Sag': '8%', 'Swell': '8%',
-                                                        'Interruption': '9%', 'Flicker': '9%'
-                                                    , 'Harmonic': '9%', 'Oscillatory Transient': '9%', 'Spike': '9%',
+                                                        'Interruption': '9%', 'Flicker': '9%',
+                                                        'Harmonic': '9%', 'Oscillatory Transient': '9%', 'Spike': '9%',
                                                         'Sag & Harmonic': '9%', 'Interruption & Harmonic': '9%',
                                                         'Swell & Harmonic': '9%', },
                                                 sizing_mode='stretch_width')
 
-    event_page_layout = pn.Column(pn.Column(pn.Column(Head_Selected_Details,
-                                                      event_page_event_detail),
-                                            pn.Column(Head_Selected_Waveform,
-                                                      Vab_waveform, Vbc_waveform, Vca_waveform,
-                                                      Ia_waveform, Ib_waveform, Ic_waveform,Head_Similar_Events)),
-                                  similar_event_widget)
+    event_page_layout = pn.Column(pn.Column(event_page_event_detail,
+                                            pn.WidgetBox(pn.Column(Head_Selected_Waveform,
+                                                                   Vab_waveform, Vbc_waveform, Vca_waveform,
+                                                                   Ia_waveform, Ib_waveform, Ic_waveform))),
+                                  pn.WidgetBox(Head_Similar_Events, similar_event_widget, width=860))
 
     # ///////////////////////////////////////////
     # Build the inter-active data-exploration pane
