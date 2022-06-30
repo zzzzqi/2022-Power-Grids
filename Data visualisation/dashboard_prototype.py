@@ -1,6 +1,5 @@
 import io
-import random
-import pandas
+import os
 import panel as pn
 import numpy as np
 import pandas as pd
@@ -17,7 +16,8 @@ import umap.umap_ as umap
 
 # Enable Bokeh and Panel
 hv.extension('bokeh')
-pn.extension('vega')
+pn.extension('vega', 'tabulator')
+
 
 ## ========================================================
 ## Build the layout of the dashboard
@@ -52,6 +52,8 @@ app.sidebar.append(file_input)
 ## Read the input CSV file and set it for the dynamic environment
 @pn.depends(file_input)
 def dynamic_env(df):
+    ## ========================================================
+    ## Load the CSV file
     if df is None:
         metadata_columns = ["metadata_dummy_axis" + str(i) for i in range(0, 5)]
         metadata_columns[0] = "event_id"
@@ -59,10 +61,14 @@ def dynamic_env(df):
         df = pd.DataFrame(np.random.uniform(0, 1, size=(100, 60)),
                           columns=["dummy_axis" + str(i) for i in range(0, 60)])
     else:
-        metadata_df = pd.read_csv(io.BytesIO(file_input.value), header=0, usecols=range(1, 5))
+        metadata_df = pd.read_csv(io.BytesIO(file_input.value), header=0, usecols=range(1, 6))
         df = pd.read_csv(io.BytesIO(file_input.value), header=0, usecols=range(6, 66))
     metadata_df = metadata_df.dropna()
     df = df.dropna()
+
+    ## ========================================================
+    ## Define settings for the widgetboxes at the sidebar
+    widgetbox_width = 330
 
     ## ========================================================
     ## Basic dataframe
@@ -101,7 +107,8 @@ def dynamic_env(df):
         dr_selection,
         pn.pane.Markdown("#### Clustering algos: "),
         clustering_selection,
-        pn.pane.Markdown("")
+        pn.pane.Markdown(""),
+        width=widgetbox_width
     )
 
     ## ========================================================
@@ -168,21 +175,24 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 basic_df_x_axis_selection,
                 basic_df_y_axis_selection,
-                pn.pane.Markdown("")
+                pn.pane.Markdown(""),
+                width=widgetbox_width
             )
         elif dr_value == "PCA" and clustering_value == "Nil":
             return pn.WidgetBox(
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 pca_df_x_axis_selection,
                 pca_df_y_axis_selection,
-                pn.pane.Markdown("")
+                pn.pane.Markdown(""),
+                width=widgetbox_width
             )
         elif dr_value == "UMAP" and clustering_value == "Nil":
             return pn.WidgetBox(
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 umap_df_x_axis_selection,
                 umap_df_y_axis_selection,
-                pn.pane.Markdown("")
+                pn.pane.Markdown(""),
+                width=widgetbox_width
             )
         elif dr_value == "Nil" and clustering_value == "K-Means":
             return pn.WidgetBox(
@@ -190,7 +200,8 @@ def dynamic_env(df):
                 basic_df_x_axis_selection,
                 basic_df_y_axis_selection,
                 k_means_n_clusters_selection,
-                pn.pane.Markdown("")
+                pn.pane.Markdown(""),
+                width=widgetbox_width
             )
         elif dr_value == "PCA" and clustering_value == "K-Means":
             return pn.WidgetBox(
@@ -198,7 +209,8 @@ def dynamic_env(df):
                 pca_df_x_axis_selection,
                 pca_df_y_axis_selection,
                 k_means_n_clusters_selection,
-                pn.pane.Markdown("")
+                pn.pane.Markdown(""),
+                width=widgetbox_width
             )
         elif dr_value == "UMAP" and clustering_value == "K-Means":
             return pn.WidgetBox(
@@ -206,7 +218,8 @@ def dynamic_env(df):
                 umap_df_x_axis_selection,
                 umap_df_y_axis_selection,
                 k_means_n_clusters_selection,
-                pn.pane.Markdown("")
+                pn.pane.Markdown(""),
+                width=widgetbox_width
             )
         elif dr_value == "Nil" and clustering_value == "DBSCAN":
             return pn.WidgetBox(
@@ -215,7 +228,8 @@ def dynamic_env(df):
                 basic_df_y_axis_selection,
                 dbscan_max_distance_selection,
                 dbscan_n_samples_selection,
-                pn.pane.Markdown("")
+                pn.pane.Markdown(""),
+                width=widgetbox_width
             )
         elif dr_value == "PCA" and clustering_value == "DBSCAN":
             return pn.WidgetBox(
@@ -224,7 +238,8 @@ def dynamic_env(df):
                 pca_df_y_axis_selection,
                 dbscan_max_distance_selection,
                 dbscan_n_samples_selection,
-                pn.pane.Markdown("")
+                pn.pane.Markdown(""),
+                width=widgetbox_width
             )
         elif dr_value == "UMAP" and clustering_value == "DBSCAN":
             return pn.WidgetBox(
@@ -233,182 +248,291 @@ def dynamic_env(df):
                 umap_df_y_axis_selection,
                 dbscan_max_distance_selection,
                 dbscan_n_samples_selection,
-                pn.pane.Markdown("")
+                pn.pane.Markdown(""),
+                width=widgetbox_width
+            )
+
+    ## ========================================================
+    ## Column 1c: The similar events configuration column
+    # Similar events options for no dimensionality algos for no clustering algos
+    basic_similar_events_x_value_selection = pn.widgets.FloatSlider(
+        value=0.05,
+        start=0.00,
+        end=1.00,
+        step=0.05,
+        name="Selected event's x-axis prediction score +/ -"
+    )
+    basic_similar_events_y_value_selection = pn.widgets.FloatSlider(
+        value=0.05,
+        start=0.00,
+        end=1.00,
+        step=0.05,
+        name="Selected event's y-axis prediction score +/ -"
+    )
+    # Similar events options for dimensionality algos and no clustering algos
+    dr_similar_events_x_value_selection = pn.widgets.FloatSlider(
+        value=0.15,
+        start=0.00,
+        end=1.00,
+        step=0.05,
+        name="Selected event's x-value percentage +/ -"
+    )
+    dr_similar_events_y_value_selection = pn.widgets.FloatSlider(
+        value=0.15,
+        start=0.00,
+        end=1.00,
+        step=0.05,
+        name="Selected event's y-value percentage +/ -"
+    )
+    # Build the similar events configuration widgetbox
+    @pn.depends(dr_selection.param.value, clustering_selection.param.value)
+    def similar_events_configuration(dr_value, clustering_value):
+        if dr_value == "Nil" and clustering_value == "Nil":
+            return pn.WidgetBox(
+                pn.pane.Markdown("#### Similar events options: "),
+                basic_similar_events_x_value_selection,
+                basic_similar_events_y_value_selection,
+                pn.pane.Markdown(""),
+                width=widgetbox_width
+            )
+        elif dr_value == "PCA" and clustering_value == "Nil":
+            return pn.WidgetBox(
+                pn.pane.Markdown("#### Similar events options: "),
+                dr_similar_events_x_value_selection,
+                dr_similar_events_y_value_selection,
+                pn.pane.Markdown(""),
+                width=widgetbox_width
+            )
+        elif dr_value == "UMAP" and clustering_value == "Nil":
+            return pn.WidgetBox(
+                pn.pane.Markdown("#### Similar events options: "),
+                dr_similar_events_x_value_selection,
+                dr_similar_events_y_value_selection,
+                pn.pane.Markdown(""),
+                width=widgetbox_width
+            )
+        else:
+            return pn.WidgetBox(
+                pn.pane.Markdown("#### Similar events options: "),
+                pn.pane.Markdown("Similar events are selected based on their cluster value."),
+                pn.pane.Markdown(""),
+                width=widgetbox_width
             )
 
     ## ========================================================
     ## Column 2: The data-exploration pane
 
-    # Build the event_page
-
-    event_df = pd.read_csv("flickers_sample00.csv", header=0)
-
-    event_metadata_header = "#### Event metadata:"
-    event_waveforms_header = "#### Event waveforms:"
-    similar_events_header = "#### Similar events:"""
-    
-    event_metadata = pn.Column(
-        event_metadata_header,
-        pn.Row(
-            pn.pane.Markdown("event_id: " + str(event_df.loc[1, "event_id"])),
-            pn.pane.Markdown("start_time: " + str(event_df.loc[1, "start_time"])),
-            pn.pane.Markdown("asset_name: " + str(event_df.loc[1, "asset_name"]))
-        )
-    )
-
-    waveform_height = 150
+    # Define settings for waveform charts
+    waveform_height = 500
     waveform_width = 950
     waveform_fontsize = '80%'
 
-    vab_waveform = event_df.hvplot.line(
-        x='timestamps (in ms)',
-        y='Vab',
-        legend=False,
-        responsive=False,
-        height=waveform_height,
-        width=waveform_width,
-        title="Vab_waveform of Selected event"
-    ).opts(
-        xaxis=None,
-        fontsize=waveform_fontsize
-    )
+    # Build the interactive event page
+    def build_event_page(
+        selection, 
+        selected_df, 
+        x_axis,
+        y_axis,
+        clusters,
+        similar_events_x_parameter,
+        similar_events_y_parameter):
 
-    vbc_waveform = event_df.hvplot.line(
-        x='timestamps (in ms)',
-        y='Vbc',
-        legend=False,
-        responsive=False,
-        height=waveform_height,
-        width=waveform_width,
-        title="Vbc_waveform of Selected event"
-    ).opts(
-        xaxis=None,
-        fontsize=waveform_fontsize
-    )
+        # Select the event data CSV file
+        selected_event_df = selected_df.iloc[selection[0] - 1]
+        selected_event_csv_filename = os.getcwd() + os.sep + "event_data" + os.sep + \
+            selected_event_df["input_event_csv_filename"] + ".csv"
+        selected_event_details_df = pd.read_csv(selected_event_csv_filename, header=0)
 
-    vca_waveform = event_df.hvplot.line(
-        x='timestamps (in ms)',
-        y='Vca',
-        legend=False,
-        responsive=False,
-        height=waveform_height,
-        width=waveform_width,
-        title="Vca_waveform of Selected event"
-    ).opts(
-        xaxis=None,
-        fontsize=waveform_fontsize
-    )
+        # Plot the event waveforms
+        voltages_waveforms = selected_event_details_df.hvplot.line(
+            x='timestamps (in ms)',
+            y=['Vab', 'Vbc', 'Vca'],
+            legend=True,
+            responsive=False,
+            height=waveform_height,
+            width=waveform_width,
+            title="Voltages waveforms"
+        ).opts(
+            legend_position='top_right',
+            fontsize=waveform_fontsize
+        )
+        currents_waveforms = selected_event_details_df.hvplot.line(
+            x='timestamps (in ms)',
+            y=['Ia', 'Ib', 'Ic'],
+            legend=True,
+            responsive=False,
+            height=waveform_height,
+            width=waveform_width,
+            title="Currents waveforms"
+        ).opts(
+            legend_position='top_right',
+            fontsize=waveform_fontsize
+        )
 
-    ia_waveform = event_df.hvplot.line(
-        x='timestamps (in ms)',
-        y='Ia',
-        legend=False,
-        responsive=False,
-        height=waveform_height,
-        width=waveform_width,
-        title="Ia_waveform of Selected event"
-    ).opts(
-        xaxis=None,
-        fontsize=waveform_fontsize
-    )
+        # Identify the similar events
+        selected_event_id = selected_event_df["event_id"]
+        selected_event_x_value = selected_event_df[x_axis]
+        selected_event_y_value = selected_event_df[y_axis]
+        # For no clustering algos
+        if (clusters == None):
+            # For no dimensionality algos
+            if (x_axis != "PC 1" and x_axis != "PC 2" and x_axis != "UMAP 1" and x_axis != "UMAP 2"):    
+                similar_events_df = selected_df.loc[(
+                    (selected_df["event_id"] != selected_event_id) &
+                    (selected_df[x_axis] <= selected_event_x_value + similar_events_x_parameter) & 
+                    (selected_df[x_axis] >= selected_event_x_value - similar_events_x_parameter) &
+                    (selected_df[y_axis] <= selected_event_y_value + similar_events_y_parameter) &
+                    (selected_df[y_axis] >= selected_event_y_value - similar_events_y_parameter)
+                )]
+            # For dimensionality algos
+            else:
+                similar_events_df = selected_df.loc[(
+                    (selected_df["event_id"] != selected_event_id) &
+                    (selected_df[x_axis] <= selected_event_x_value * (1 + similar_events_x_parameter)) & 
+                    (selected_df[x_axis] >= selected_event_x_value * (1 - similar_events_x_parameter)) &
+                    (selected_df[y_axis] <= selected_event_y_value * (1 + similar_events_y_parameter)) &
+                    (selected_df[y_axis] >= selected_event_y_value * (1 - similar_events_y_parameter))
+                )]
+        # For clustering algos
+        else:
+            selected_event_cluster = selected_event_df["cluster"]
+            similar_events_df = selected_df.loc[(
+                (selected_df["event_id"] != selected_event_id) &
+                (selected_df["cluster"] == selected_event_cluster)
+            )]
+        similar_events_df.set_index("event_id", inplace=True)
 
-    ib_waveform = event_df.hvplot.line(
-        x='timestamps (in ms)',
-        y='Ib',
-        legend=False,
-        responsive=False,
-        height=waveform_height,
-        width=waveform_width,
-        title="Ib_waveform of Selected event"
-    ).opts(
-        xaxis=None,
-        fontsize=waveform_fontsize
-    )
+        # Build similar events summary as a Tabulator
+        similar_events_tabs = pn.widgets.Tabulator(
+            similar_events_df,
+            selectable="checkboxes",
+            layout="fit_data_fill",
+            width=950,
+            page_size=1000,
+        )
 
-    ic_waveform = event_df.hvplot.line(
-        x='timestamps (in ms)',
-        y='Ic',
-        legend=False,
-        responsive=False,
-        height=waveform_height,
-        width=waveform_width,
-        title="Ic_waveform of Selected event"
-    ).opts(
-        xaxis=None,
-        fontsize=waveform_fontsize
-    )
-
-    df_similar_event = pd.DataFrame({
-        'Event_Id': ['Event ' + str(x) for x in range(0, 10)],
-        'Sag': [bool(random.randint(0, 1)) for _ in range(10)],
-        'Swell': [bool(random.randint(0, 1)) for _ in range(10)],
-        'Interruption': [bool(random.randint(0, 1)) for _ in range(10)],
-        'Flicker': [bool(random.randint(0, 1)) for _ in range(10)],
-        'Harmonic': [bool(random.randint(0, 1)) for _ in range(10)],
-        'Oscillatory Transient': [bool(random.randint(0, 1)) for _ in range(10)],
-        'Spike': [bool(random.randint(0, 1)) for _ in range(10)],
-        'Sag & Harmonic': [bool(random.randint(0, 1)) for _ in range(10)],
-        'Interruption & Harmonic': [bool(random.randint(0, 1)) for _ in range(10)],
-        'Swell & Harmonic': [bool(random.randint(0, 1)) for _ in range(10)],
-    })
-
-    bokeh_formatters = {
-        'Sag': BooleanFormatter(),
-        'Swell': BooleanFormatter(),
-        'Interruption': BooleanFormatter(),
-        'Flicker': BooleanFormatter(),
-        'Harmonic': BooleanFormatter(),
-        'Oscillatory Transient': BooleanFormatter(),
-        'Spike': BooleanFormatter(),
-        'Sag & Harmonic': BooleanFormatter(),
-        'Interruption & Harmonic': BooleanFormatter(),
-        'Swell & Harmonic': BooleanFormatter(),
-    }
-
-    similar_event_widget = pn.widgets.Tabulator(df_similar_event, formatters=bokeh_formatters,
-                                                show_index=False,
-                                                widths={'Event_Id': '12%', 'Sag': '8%', 'Swell': '8%',
-                                                        'Interruption': '9%', 'Flicker': '9%',
-                                                        'Harmonic': '9%', 'Oscillatory Transient': '9%', 'Spike': '9%',
-                                                        'Sag & Harmonic': '9%', 'Interruption & Harmonic': '9%',
-                                                        'Swell & Harmonic': '9%', },
-                                                sizing_mode='stretch_width')
-
-    event_page = pn.Column(
-        pn.WidgetBox(
-            event_metadata, 
-            width=1000),
-        pn.WidgetBox(
+        # Build the event page
+        event_page = pn.Row(
             pn.Column(
-                event_waveforms_header, 
-                vab_waveform, 
-                vbc_waveform, 
-                vca_waveform, 
-                ia_waveform, 
-                ib_waveform, 
-                ic_waveform
+                "#### Selected event:",
+                # Event page element - metadata
+                pn.WidgetBox(
+                    "#### Event metadata:",
+                    pn.Row(
+                        pn.pane.Markdown("event_id: " + str(selected_event_id)),
+                        pn.pane.Markdown("start_time: " + str(selected_event_df["start_time"])),
+                        pn.pane.Markdown("asset_name: " + str(selected_event_df["asset_name"]))
+                    ),
+                    width=1000
                 ),
-            width=1000),
-        # pn.WidgetBox(
-        #     similar_events_header, 
-        #     similar_event_widget, 
-        #     width=1000)
-    )
+                # Event page element - waveforms
+                pn.WidgetBox(
+                    "#### Event waveforms:",
+                    voltages_waveforms,
+                    currents_waveforms,
+                    width=1000
+                ),
+                # Event page element - similar events summary
+                pn.WidgetBox(
+                    "#### Simiar events:",
+                    "A total of " + str(len(similar_events_df.index)) + " similar events are found.",
+                    similar_events_tabs,
+                    width=1000
+                )
+            )
+        )
 
-    # ///////////////////////////////////////////
-    # Build the inter-active data-exploration pane
+        # Build similar events depending on selections on the similar events summary Tabulator
+        @pn.depends(similar_events_tabs.param.selection)
+        def build_similar_events(selection):
+            if bool(selection):
+                similar_events_row = pn.Row()
+                for i in range(len(selection)):
+                    target_similar_event_df = similar_events_df.iloc[selection[i]]
+                    target_similar_event_csv_filename = os.getcwd() + os.sep + "event_data" + \
+                        os.sep + target_similar_event_df["input_event_csv_filename"] + ".csv"
+                    target_similar_event_details_df = pd.read_csv(target_similar_event_csv_filename, header=0)
+                    # Plot the target event waveforms
+                    voltages_waveforms = target_similar_event_details_df.hvplot.line(
+                        x='timestamps (in ms)',
+                        y=['Vab', 'Vbc', 'Vca'],
+                        legend=True,
+                        responsive=False,
+                        height=waveform_height,
+                        width=waveform_width,
+                        title="Voltages waveforms"
+                    ).opts(
+                        legend_position='top_right',
+                        fontsize=waveform_fontsize
+                    )
+                    currents_waveforms = target_similar_event_details_df.hvplot.line(
+                        x='timestamps (in ms)',
+                        y=['Ia', 'Ib', 'Ic'],
+                        legend=True,
+                        responsive=False,
+                        height=waveform_height,
+                        width=waveform_width,
+                        title="Currents waveforms"
+                    ).opts(
+                        legend_position='top_right',
+                        fontsize=waveform_fontsize
+                    )
+                    # Add the target event elements
+                    target_similar_event = pn.Column(
+                        "#### Similar event number " + str(i + 1) + ":",
+                        # Event page element - metadata
+                        pn.WidgetBox(
+                            "#### Event metadata:",
+                            pn.Row(
+                                pn.pane.Markdown("event_id: " + \
+                                    str(target_similar_event_details_df["event_id"].values[0])),
+                                pn.pane.Markdown("start_time: " + \
+                                    str(target_similar_event_details_df["start_time"].values[0])),
+                                pn.pane.Markdown("asset_name: " + \
+                                    str(target_similar_event_details_df["asset_name"].values[0]))
+                            ),
+                            width=1000
+                        ),
+                        # Event page element - waveforms
+                        pn.WidgetBox(
+                            "#### Event waveforms:",
+                            voltages_waveforms,
+                            currents_waveforms,
+                            width=1000
+                        )
+                    )
+                    similar_events_row.append(pn.Spacer(
+                        background="lightgrey",
+                        width=1,
+                        height=1250
+                        )
+                    )
+                    similar_events_row.append(target_similar_event)
+                return similar_events_row
+        event_page.append(build_similar_events)
+
+        # Return the event page
+        return event_page
+
+    # Build the interactive data-exploration pane
     @pn.depends(dr_selection.param.value, clustering_selection.param.value,
                 basic_df_x_axis_selection.param.value, basic_df_y_axis_selection.param.value,
                 pca_df_x_axis_selection.param.value, pca_df_y_axis_selection.param.value,
                 umap_df_x_axis_selection.param.value, umap_df_y_axis_selection.param.value,
                 k_means_n_clusters_selection.param.value,
-                dbscan_max_distance_selection.param.value, dbscan_n_samples_selection.param.value)
+                dbscan_max_distance_selection.param.value, dbscan_n_samples_selection.param.value,
+                basic_similar_events_x_value_selection.param.value,
+                basic_similar_events_y_value_selection.param.value,
+                dr_similar_events_x_value_selection.param.value,
+                dr_similar_events_y_value_selection.param.value)
     def data_exploration(dr_value, clustering_value,
                          basic_x_value, basic_y_value,
                          pca_x_value, pca_y_value,
                          umap_x_value, umap_y_value,
                          k_means_n_clusters,
-                         dbscan_max_distance_value, dbscan_n_samples_value):
+                         dbscan_max_distance_value, dbscan_n_samples_value,
+                         basic_similar_events_x_value, basic_similar_events_y_value,
+                         dr_similar_events_x_value, dr_similar_events_y_value):
         # Option A: No dimensionality reduction nor clustering algos
         if dr_value == "Nil" and clustering_value == "Nil":
             selected_df = basic_df[[basic_x_value, basic_y_value]]
@@ -427,15 +551,24 @@ def dynamic_env(df):
             ).interactive().add_selection(selector)
             vega_pane = pn.pane.Vega(plot, debounce=10)
 
+            # Build the interactive event page
             def get_event(selection):
                 if not selection:
                     return '## No selection'
                 else:
-                    return selected_df.iloc[selection[0] - 1]
+                    return build_event_page(
+                        selection, 
+                        selected_df, 
+                        basic_x_value,
+                        basic_y_value,
+                        None,
+                        basic_similar_events_x_value,
+                        basic_similar_events_y_value
+                    )
 
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
-                ("Power signal event", event_page)
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
             )
         # Option B: PCA and no clustering algo
         elif dr_value == "PCA" and clustering_value == "Nil":
@@ -458,11 +591,19 @@ def dynamic_env(df):
                 if not selection:
                     return '## No selection'
                 else:
-                    return selected_df.iloc[selection[0] - 1]
+                    return build_event_page(
+                        selection, 
+                        selected_df,
+                        pca_x_value,
+                        pca_y_value,
+                        None,
+                        dr_similar_events_x_value,
+                        dr_similar_events_y_value
+                        )
 
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
-                ("Power signal event", event_page)
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
             )
         # Option C: UMAP and no clustering algo
         elif dr_value == "UMAP" and clustering_value == "Nil":
@@ -485,11 +626,19 @@ def dynamic_env(df):
                 if not selection:
                     return '## No selection'
                 else:
-                    return selected_df.iloc[selection[0] - 1]
+                    return build_event_page(
+                        selection, 
+                        selected_df,
+                        umap_x_value,
+                        umap_y_value,
+                        None,
+                        dr_similar_events_x_value,
+                        dr_similar_events_y_value
+                        )
 
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
-                ("Power signal event", event_page)
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
             )
         # Opton D: No dimensionality reduction and K-Means clustering algo
         elif dr_value == "Nil" and clustering_value == "K-Means":
@@ -520,12 +669,20 @@ def dynamic_env(df):
                 if not selection:
                     return '## No selection'
                 else:
-                    return selected_df.iloc[selection[0] - 1]
+                    return build_event_page(
+                        selection, 
+                        selected_df,
+                        basic_x_value,
+                        basic_y_value,
+                        clustering_value,
+                        None,
+                        None
+                        )
 
             # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
-                ("Power signal event", event_page)
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
             )
         # Option E: PCA and K-Means
         elif dr_value == "PCA" and clustering_value == "K-Means":
@@ -555,12 +712,20 @@ def dynamic_env(df):
                 if not selection:
                     return '## No selection'
                 else:
-                    return selected_df.iloc[selection[0] - 1]
+                    return build_event_page(
+                        selection, 
+                        selected_df,
+                        pca_x_value,
+                        pca_y_value,
+                        clustering_value,
+                        None,
+                        None
+                        )
 
             # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
-                ("Power signal event", event_page)
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
             )
         # Option F: UMAP and K-Means
         elif dr_value == "UMAP" and clustering_value == "K-Means":
@@ -590,12 +755,20 @@ def dynamic_env(df):
                 if not selection:
                     return '## No selection'
                 else:
-                    return selected_df.iloc[selection[0] - 1]
+                    return build_event_page(
+                        selection, 
+                        selected_df,
+                        umap_x_value,
+                        umap_y_value,
+                        clustering_value,
+                        None,
+                        None
+                        )
 
             # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
-                ("Power signal event", event_page)
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
             )
         # Option G: No dimensionality reduction algo and DBSCAN clustering algo
         elif dr_value == "Nil" and clustering_value == "DBSCAN":
@@ -627,12 +800,20 @@ def dynamic_env(df):
                 if not selection:
                     return '## No selection'
                 else:
-                    return selected_df.iloc[selection[0] - 1]
+                    return build_event_page(
+                        selection, 
+                        selected_df,
+                        basic_x_value,
+                        basic_y_value,
+                        clustering_value,
+                        None,
+                        None
+                        )
 
             # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
-                ("Power signal event", event_page)
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
             )
         # Option H: PCA and DBSCAN
         elif dr_value == "PCA" and clustering_value == "DBSCAN":
@@ -663,12 +844,20 @@ def dynamic_env(df):
                 if not selection:
                     return '## No selection'
                 else:
-                    return selected_df.iloc[selection[0] - 1]
+                    return build_event_page(
+                        selection, 
+                        selected_df,
+                        pca_x_value,
+                        pca_y_value,
+                        clustering_value,
+                        None,
+                        None
+                        )
 
             # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
-                ("Power signal event", event_page)
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
             )
         # Option I: UMAP and DBSCAN
         elif dr_value == "UMAP" and clustering_value == "DBSCAN":
@@ -699,12 +888,20 @@ def dynamic_env(df):
                 if not selection:
                     return '## No selection'
                 else:
-                    return selected_df.iloc[selection[0] - 1]
+                    return build_event_page(
+                        selection, 
+                        selected_df,
+                        umap_x_value,
+                        umap_y_value,
+                        clustering_value,
+                        None,
+                        None
+                        )
 
             # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
-                ("Power signal event", event_page)
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
             )
 
     ## ========================================================
@@ -712,7 +909,8 @@ def dynamic_env(df):
     return pn.Row(
         pn.Column(
             algo_column,
-            plot_configuration
+            plot_configuration,
+            similar_events_configuration
         ),
         pn.Column(
             data_exploration
