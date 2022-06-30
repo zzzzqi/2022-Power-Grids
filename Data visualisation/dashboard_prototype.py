@@ -385,14 +385,40 @@ def dynamic_env(df):
                     (selected_df[y_axis] >= selected_event_y_value - similar_events_y_parameter)
                 )]
             # For dimensionality algos
+            # Bug here for negative x and y values
             else:
-                similar_events_df = selected_df.loc[(
-                    (selected_df["event_id"] != selected_event_id) &
-                    (selected_df[x_axis] <= selected_event_x_value * (1 + similar_events_x_parameter)) & 
-                    (selected_df[x_axis] >= selected_event_x_value * (1 - similar_events_x_parameter)) &
-                    (selected_df[y_axis] <= selected_event_y_value * (1 + similar_events_y_parameter)) &
-                    (selected_df[y_axis] >= selected_event_y_value * (1 - similar_events_y_parameter))
-                )]
+                if selected_event_x_value >= 0 and selected_event_y_value >= 0:
+                    similar_events_df = selected_df.loc[(
+                        (selected_df["event_id"] != selected_event_id) &
+                        (selected_df[x_axis] <= selected_event_x_value * (1 + similar_events_x_parameter)) & 
+                        (selected_df[x_axis] >= selected_event_x_value * (1 - similar_events_x_parameter)) &
+                        (selected_df[y_axis] <= selected_event_y_value * (1 + similar_events_y_parameter)) &
+                        (selected_df[y_axis] >= selected_event_y_value * (1 - similar_events_y_parameter))
+                    )]
+                elif selected_event_x_value < 0 and selected_event_y_value >= 0:
+                    similar_events_df = selected_df.loc[(
+                        (selected_df["event_id"] != selected_event_id) &
+                        (selected_df[x_axis] >= selected_event_x_value * (1 + similar_events_x_parameter)) & 
+                        (selected_df[x_axis] <= selected_event_x_value * (1 - similar_events_x_parameter)) &
+                        (selected_df[y_axis] <= selected_event_y_value * (1 + similar_events_y_parameter)) &
+                        (selected_df[y_axis] >= selected_event_y_value * (1 - similar_events_y_parameter))
+                    )]
+                elif selected_event_x_value >= 0 and selected_event_y_value < 0:
+                    similar_events_df = selected_df.loc[(
+                        (selected_df["event_id"] != selected_event_id) &
+                        (selected_df[x_axis] <= selected_event_x_value * (1 + similar_events_x_parameter)) & 
+                        (selected_df[x_axis] >= selected_event_x_value * (1 - similar_events_x_parameter)) &
+                        (selected_df[y_axis] >= selected_event_y_value * (1 + similar_events_y_parameter)) &
+                        (selected_df[y_axis] <= selected_event_y_value * (1 - similar_events_y_parameter))
+                    )]
+                else:
+                    similar_events_df = selected_df.loc[(
+                        (selected_df["event_id"] != selected_event_id) &
+                        (selected_df[x_axis] >= selected_event_x_value * (1 + similar_events_x_parameter)) & 
+                        (selected_df[x_axis] <= selected_event_x_value * (1 - similar_events_x_parameter)) &
+                        (selected_df[y_axis] >= selected_event_y_value * (1 + similar_events_y_parameter)) &
+                        (selected_df[y_axis] <= selected_event_y_value * (1 - similar_events_y_parameter))
+                    )]
         # For clustering algos
         else:
             selected_event_cluster = selected_event_df["cluster"]
@@ -407,6 +433,7 @@ def dynamic_env(df):
             similar_events_df,
             selectable="checkboxes",
             layout="fit_data_fill",
+            pagination="local",
             width=950,
             page_size=1000,
         )
