@@ -480,85 +480,111 @@ def dynamic_env(df):
             )
         )
 
+        # Build a cache dictionary for similar events to improve performance
+        similar_events_dict = dict()
+
         # Build similar events depending on selections on the similar events summary Tabulator
         @pn.depends(similar_events_tabs.param.selection)
         def build_similar_events(selection):
             if bool(selection):
                 similar_events_row = pn.Row()
                 for i in range(len(selection)):
-                    # Read the target event CSV file
-                    target_similar_event_df = similar_events_df.iloc[selection[i]]
-                    target_similar_event_csv_filename = os.getcwd() + os.sep + "event_data" + \
-                        os.sep + target_similar_event_df["input_event_csv_filename"] + ".csv"
-                    target_similar_event_details_df = pd.read_csv(target_similar_event_csv_filename, header=0)
-
-                    # Extract the event data
-                    target_similar_event_id = target_similar_event_details_df["event_id"].values[0]
-                    target_similar_event_start_time = target_similar_event_details_df["start_time"].values[0]
-                    target_similar_event_asset_name = target_similar_event_details_df["asset_name"].values[0]
-                    target_similar_event_x_value = target_similar_event_df[x_axis]
-                    target_similar_event_y_value = target_similar_event_df[y_axis]
-
-                    # Build the event data as a Row
-                    target_similar_event_data = pn.Row(
-                        pn.pane.Markdown("event_id: " + str(target_similar_event_id)),
-                        pn.pane.Markdown("start_time: " + str(target_similar_event_start_time)),
-                        pn.pane.Markdown("asset_name: " + str(target_similar_event_asset_name)),
-                        pn.pane.Markdown(str(x_axis) + ": " + str(target_similar_event_x_value)),
-                        pn.pane.Markdown(str(y_axis) + ": " + str(target_similar_event_y_value)),
-                    )
-                    if clusters != None:
-                        target_similar_event_data.append(
-                            pn.pane.Markdown("cluster: " + str(target_similar_event_df["cluster"]))
+                    # Identify the selected row in the Tabulator
+                    target_index = selection[i]
+                    # Event page element - header
+                    target_similar_event_header = "#### Similar event number " + str(i + 1) + ":"
+                        # Read the target event from the dict
+                    if target_index in similar_events_dict:
+                        similar_events_row.append(pn.Spacer(
+                            background="lightgrey",
+                            width=1,
+                            height=1050
+                            )
+                        )   
+                        similar_events_row.append(pn.Column(
+                            target_similar_event_header,
+                            similar_events_dict.get(target_index)[0],
+                            similar_events_dict.get(target_index)[1]
+                            )
                         )
+                    else:
+                        # Read the target event CSV file
+                        target_similar_event_df = similar_events_df.iloc[selection[i]]
+                        target_similar_event_csv_filename = os.getcwd() + os.sep + "event_data" + \
+                            os.sep + target_similar_event_df["input_event_csv_filename"] + ".csv"
+                        target_similar_event_details_df = pd.read_csv(target_similar_event_csv_filename, header=0)
 
-                    # Plot the target event waveforms
-                    voltages_waveforms = target_similar_event_details_df.hvplot.line(
-                        x='timestamps (in ms)',
-                        y=['Vab', 'Vbc', 'Vca'],
-                        legend=True,
-                        responsive=False,
-                        height=waveform_height,
-                        width=waveform_width,
-                        title="Voltages"
-                    ).opts(
-                        fontscale=waveform_fontsize
-                    )
-                    currents_waveforms = target_similar_event_details_df.hvplot.line(
-                        x='timestamps (in ms)',
-                        y=['Ia', 'Ib', 'Ic'],
-                        legend=True,
-                        responsive=False,
-                        height=waveform_height,
-                        width=waveform_width,
-                        title="Currents"
-                    ).opts(
-                        fontscale=waveform_fontsize
-                    )
-                    # Add the target event elements
-                    target_similar_event = pn.Column(
-                        "#### Similar event number " + str(i + 1) + ":",
-                        # Event page element - metadata
-                        pn.WidgetBox(
+                        # Extract the event data
+                        target_similar_event_id = target_similar_event_details_df["event_id"].values[0]
+                        target_similar_event_start_time = target_similar_event_details_df["start_time"].values[0]
+                        target_similar_event_asset_name = target_similar_event_details_df["asset_name"].values[0]
+                        target_similar_event_x_value = target_similar_event_df[x_axis]
+                        target_similar_event_y_value = target_similar_event_df[y_axis]
+
+                        # Build the event data as a Row
+                        target_similar_event_data = pn.Row(
+                            pn.pane.Markdown("event_id: " + str(target_similar_event_id)),
+                            pn.pane.Markdown("start_time: " + str(target_similar_event_start_time)),
+                            pn.pane.Markdown("asset_name: " + str(target_similar_event_asset_name)),
+                            pn.pane.Markdown(str(x_axis) + ": " + str(target_similar_event_x_value)),
+                            pn.pane.Markdown(str(y_axis) + ": " + str(target_similar_event_y_value)),
+                        )
+                        if clusters != None:
+                            target_similar_event_data.append(
+                                pn.pane.Markdown("cluster: " + str(target_similar_event_df["cluster"]))
+                            )
+
+                        # Plot the target event waveforms
+                        voltages_waveforms = target_similar_event_details_df.hvplot.line(
+                            x='timestamps (in ms)',
+                            y=['Vab', 'Vbc', 'Vca'],
+                            legend=True,
+                            responsive=False,
+                            height=waveform_height,
+                            width=waveform_width,
+                            title="Voltages"
+                        ).opts(
+                            fontscale=waveform_fontsize
+                        )
+                        currents_waveforms = target_similar_event_details_df.hvplot.line(
+                            x='timestamps (in ms)',
+                            y=['Ia', 'Ib', 'Ic'],
+                            legend=True,
+                            responsive=False,
+                            height=waveform_height,
+                            width=waveform_width,
+                            title="Currents"
+                        ).opts(
+                            fontscale=waveform_fontsize
+                        )
+                        # Add the target event elements
+                        # Event page element - data
+                        target_similar_event_data_box = pn.WidgetBox(
                             "#### Event data:",
                             target_similar_event_data,
                             width=1000
-                        ),
+                        )
                         # Event page element - waveforms
-                        pn.WidgetBox(
+                        target_similar_event_waveforms_box = pn.WidgetBox(
                             "#### Event waveforms:",
                             voltages_waveforms,
                             currents_waveforms,
                             width=1000
                         )
-                    )
-                    similar_events_row.append(pn.Spacer(
-                        background="lightgrey",
-                        width=1,
-                        height=1050
+                        similar_events_row.append(pn.Spacer(
+                            background="lightgrey",
+                            width=1,
+                            height=1050
+                            )
                         )
-                    )
-                    similar_events_row.append(target_similar_event)
+                        similar_events_row.append(pn.Column(
+                            target_similar_event_header,
+                            target_similar_event_data_box,
+                            target_similar_event_waveforms_box
+                            )
+                        )
+                        similar_events_dict[target_index] = \
+                            [target_similar_event_data_box, target_similar_event_waveforms_box]
                 return similar_events_row
         event_page.append(build_similar_events)
 
