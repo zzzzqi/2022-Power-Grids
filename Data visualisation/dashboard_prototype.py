@@ -322,12 +322,14 @@ def dynamic_env(df):
     ## ========================================================
     ## Column 2: The data-exploration pane
 
-    # Define settings for waveform charts
-    waveform_height = 500
-    waveform_width = 950
-    waveform_fontsize = '80%'
+    # Define settings for charts
+    data_exploration_pane_height = 630
+    data_exploration_pane_width = 700
+    waveform_height = 400
+    waveform_width = 975
+    waveform_fontsize = 0.7
 
-    # Build the interactive event page
+    # Build the interactive event page that depends on the data-exploraton pane
     def build_event_page(
         selection, 
         selected_df, 
@@ -343,6 +345,24 @@ def dynamic_env(df):
             selected_event_df["input_event_csv_filename"] + ".csv"
         selected_event_details_df = pd.read_csv(selected_event_csv_filename, header=0)
 
+        # Extract the event data
+        selected_event_id = selected_event_df["event_id"]
+        selected_event_x_value = selected_event_df[x_axis]
+        selected_event_y_value = selected_event_df[y_axis]
+
+        # Build event data as a Row
+        event_data = pn.Row(
+            pn.pane.Markdown("event_id: " + str(selected_event_id)),
+            pn.pane.Markdown("start_time: " + str(selected_event_df["start_time"])),
+            pn.pane.Markdown("asset_name: " + str(selected_event_df["asset_name"])),
+            pn.pane.Markdown(str(x_axis) + ": " + str(selected_event_x_value)),
+            pn.pane.Markdown(str(y_axis) + ": " + str(selected_event_y_value)),
+        )
+        if clusters != None:
+            event_data.append(
+                pn.pane.Markdown("cluster: " + str(selected_event_df["cluster"]))
+            )
+
         # Plot the event waveforms
         voltages_waveforms = selected_event_details_df.hvplot.line(
             x='timestamps (in ms)',
@@ -351,10 +371,9 @@ def dynamic_env(df):
             responsive=False,
             height=waveform_height,
             width=waveform_width,
-            title="Voltages waveforms"
+            title="Voltages"
         ).opts(
-            legend_position='top_right',
-            fontsize=waveform_fontsize
+            fontscale=waveform_fontsize,
         )
         currents_waveforms = selected_event_details_df.hvplot.line(
             x='timestamps (in ms)',
@@ -363,16 +382,12 @@ def dynamic_env(df):
             responsive=False,
             height=waveform_height,
             width=waveform_width,
-            title="Currents waveforms"
+            title="Currents"
         ).opts(
-            legend_position='top_right',
-            fontsize=waveform_fontsize
+            fontscale=waveform_fontsize
         )
 
         # Identify the similar events
-        selected_event_id = selected_event_df["event_id"]
-        selected_event_x_value = selected_event_df[x_axis]
-        selected_event_y_value = selected_event_df[y_axis]
         # For no clustering algos
         if (clusters == None):
             # For no dimensionality algos
@@ -434,7 +449,7 @@ def dynamic_env(df):
             selectable="checkboxes",
             layout="fit_data_fill",
             pagination="local",
-            width=950,
+            width=975,
             page_size=1000,
         )
 
@@ -444,12 +459,8 @@ def dynamic_env(df):
                 "#### Selected event:",
                 # Event page element - metadata
                 pn.WidgetBox(
-                    "#### Event metadata:",
-                    pn.Row(
-                        pn.pane.Markdown("event_id: " + str(selected_event_id)),
-                        pn.pane.Markdown("start_time: " + str(selected_event_df["start_time"])),
-                        pn.pane.Markdown("asset_name: " + str(selected_event_df["asset_name"]))
-                    ),
+                    "#### Event data:",
+                    event_data,
                     width=1000
                 ),
                 # Event page element - waveforms
@@ -475,10 +486,32 @@ def dynamic_env(df):
             if bool(selection):
                 similar_events_row = pn.Row()
                 for i in range(len(selection)):
+                    # Read the target event CSV file
                     target_similar_event_df = similar_events_df.iloc[selection[i]]
                     target_similar_event_csv_filename = os.getcwd() + os.sep + "event_data" + \
                         os.sep + target_similar_event_df["input_event_csv_filename"] + ".csv"
                     target_similar_event_details_df = pd.read_csv(target_similar_event_csv_filename, header=0)
+
+                    # Extract the event data
+                    target_similar_event_id = target_similar_event_details_df["event_id"].values[0]
+                    target_similar_event_start_time = target_similar_event_details_df["start_time"].values[0]
+                    target_similar_event_asset_name = target_similar_event_details_df["asset_name"].values[0]
+                    target_similar_event_x_value = target_similar_event_df[x_axis]
+                    target_similar_event_y_value = target_similar_event_df[y_axis]
+
+                    # Build the event data as a Row
+                    target_similar_event_data = pn.Row(
+                        pn.pane.Markdown("event_id: " + str(target_similar_event_id)),
+                        pn.pane.Markdown("start_time: " + str(target_similar_event_start_time)),
+                        pn.pane.Markdown("asset_name: " + str(target_similar_event_asset_name)),
+                        pn.pane.Markdown(str(x_axis) + ": " + str(target_similar_event_x_value)),
+                        pn.pane.Markdown(str(y_axis) + ": " + str(target_similar_event_y_value)),
+                    )
+                    if clusters != None:
+                        target_similar_event_data.append(
+                            pn.pane.Markdown("cluster: " + str(target_similar_event_df["cluster"]))
+                        )
+
                     # Plot the target event waveforms
                     voltages_waveforms = target_similar_event_details_df.hvplot.line(
                         x='timestamps (in ms)',
@@ -487,10 +520,9 @@ def dynamic_env(df):
                         responsive=False,
                         height=waveform_height,
                         width=waveform_width,
-                        title="Voltages waveforms"
+                        title="Voltages"
                     ).opts(
-                        legend_position='top_right',
-                        fontsize=waveform_fontsize
+                        fontscale=waveform_fontsize
                     )
                     currents_waveforms = target_similar_event_details_df.hvplot.line(
                         x='timestamps (in ms)',
@@ -499,25 +531,17 @@ def dynamic_env(df):
                         responsive=False,
                         height=waveform_height,
                         width=waveform_width,
-                        title="Currents waveforms"
+                        title="Currents"
                     ).opts(
-                        legend_position='top_right',
-                        fontsize=waveform_fontsize
+                        fontscale=waveform_fontsize
                     )
                     # Add the target event elements
                     target_similar_event = pn.Column(
                         "#### Similar event number " + str(i + 1) + ":",
                         # Event page element - metadata
                         pn.WidgetBox(
-                            "#### Event metadata:",
-                            pn.Row(
-                                pn.pane.Markdown("event_id: " + \
-                                    str(target_similar_event_details_df["event_id"].values[0])),
-                                pn.pane.Markdown("start_time: " + \
-                                    str(target_similar_event_details_df["start_time"].values[0])),
-                                pn.pane.Markdown("asset_name: " + \
-                                    str(target_similar_event_details_df["asset_name"].values[0]))
-                            ),
+                            "#### Event data:",
+                            target_similar_event_data,
                             width=1000
                         ),
                         # Event page element - waveforms
@@ -531,7 +555,7 @@ def dynamic_env(df):
                     similar_events_row.append(pn.Spacer(
                         background="lightgrey",
                         width=1,
-                        height=1250
+                        height=1050
                         )
                     )
                     similar_events_row.append(target_similar_event)
@@ -572,9 +596,8 @@ def dynamic_env(df):
                 color=alt.condition(selector, alt.value("navy"), alt.value('lightgray')),
                 tooltip=["event_id", basic_x_value, basic_y_value]
             ).properties(
-                height=630,
-                width=700,
-                title="Data-exploraton pane"
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
             ).interactive().add_selection(selector)
             vega_pane = pn.pane.Vega(plot, debounce=10)
 
@@ -608,9 +631,8 @@ def dynamic_env(df):
                 color=alt.condition(selector, alt.value("navy"), alt.value('lightgray')),
                 tooltip=["event_id", pca_x_value, pca_y_value]
             ).properties(
-                height=630,
-                width=700,
-                title="Data-exploraton pane"
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
             ).interactive().add_selection(selector)
             vega_pane = pn.pane.Vega(plot, debounce=10)
 
@@ -643,9 +665,8 @@ def dynamic_env(df):
                 color=alt.condition(selector, alt.value("navy"), alt.value('lightgray')),
                 tooltip=["event_id", umap_x_value, umap_y_value]
             ).properties(
-                height=630,
-                width=700,
-                title="Data-exploraton pane"
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
             ).interactive().add_selection(selector)
             vega_pane = pn.pane.Vega(plot, debounce=10)
 
@@ -686,9 +707,8 @@ def dynamic_env(df):
                     alt.value('lightgray')),
                 tooltip=["event_id", basic_x_value, basic_y_value, "cluster"]
             ).properties(
-                height=630,
-                width=700,
-                title="Data-exploraton pane"
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
             ).interactive().add_selection(selector)
             vega_pane = pn.pane.Vega(plot, debounce=10)
 
@@ -729,9 +749,8 @@ def dynamic_env(df):
                     alt.value('lightgray')),
                 tooltip=["event_id", pca_x_value, pca_y_value, "cluster"]
             ).properties(
-                height=630,
-                width=700,
-                title="Data-exploraton pane"
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
             ).interactive().add_selection(selector)
             vega_pane = pn.pane.Vega(plot, debounce=10)
 
@@ -772,9 +791,8 @@ def dynamic_env(df):
                     alt.value('lightgray')),
                 tooltip=["event_id", umap_x_value, umap_y_value, "cluster"]
             ).properties(
-                height=630,
-                width=700,
-                title="Data-exploraton pane"
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
             ).interactive().add_selection(selector)
             vega_pane = pn.pane.Vega(plot, debounce=10)
 
@@ -817,9 +835,8 @@ def dynamic_env(df):
                     alt.value('lightgray')),
                 tooltip=["event_id", basic_x_value, basic_y_value, "cluster"]
             ).properties(
-                height=630,
-                width=700,
-                title="Data-exploraton pane"
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
             ).interactive().add_selection(selector)
             vega_pane = pn.pane.Vega(plot, debounce=10)
 
@@ -861,9 +878,8 @@ def dynamic_env(df):
                     alt.value('lightgray')),
                 tooltip=["event_id", pca_x_value, pca_y_value, "cluster"]
             ).properties(
-                height=630,
-                width=700,
-                title="Data-exploraton pane"
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
             ).interactive().add_selection(selector)
             vega_pane = pn.pane.Vega(plot, debounce=10)
 
@@ -905,9 +921,8 @@ def dynamic_env(df):
                     alt.value('lightgray')),
                 tooltip=["event_id", umap_x_value, umap_y_value, "cluster"]
             ).properties(
-                height=630,
-                width=700,
-                title="Data-exploraton pane"
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
             ).interactive().add_selection(selector)
             vega_pane = pn.pane.Vega(plot, debounce=10)
 
