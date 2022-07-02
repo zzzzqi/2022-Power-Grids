@@ -18,7 +18,6 @@ import umap.umap_ as umap
 hv.extension('bokeh')
 pn.extension('vega', 'tabulator')
 
-
 ## ========================================================
 ## Build the layout of the dashboard
 # Set the template used in the dashboard
@@ -284,6 +283,7 @@ def dynamic_env(df):
         step=0.05,
         name="Selected event's y-value percentage +/ -"
     )
+
     # Build the similar events configuration widgetbox
     @pn.depends(dr_selection.param.value, clustering_selection.param.value)
     def similar_events_configuration(dr_value, clustering_value):
@@ -331,18 +331,18 @@ def dynamic_env(df):
 
     # Build the interactive event page that depends on the data-exploraton pane
     def build_event_page(
-        selection,
-        selected_df,
-        x_axis,
-        y_axis,
-        clusters,
-        similar_events_x_parameter,
-        similar_events_y_parameter):
+            selection,
+            selected_df,
+            x_axis,
+            y_axis,
+            clusters,
+            similar_events_x_parameter,
+            similar_events_y_parameter):
 
         # Select the event data CSV file
         selected_event_df = selected_df.iloc[selection[0] - 1]
         selected_event_csv_filename = os.getcwd() + os.sep + "event_data" + os.sep + \
-            selected_event_df["input_event_csv_filename"] + ".csv"
+                                      selected_event_df["input_event_csv_filename"] + ".csv"
         selected_event_details_df = pd.read_csv(selected_event_csv_filename, header=0)
 
         # Extract the event data
@@ -393,53 +393,53 @@ def dynamic_env(df):
             # For no dimensionality algos
             if (x_axis != "PC 1" and x_axis != "PC 2" and x_axis != "UMAP 1" and x_axis != "UMAP 2"):
                 similar_events_df = selected_df.loc[(
-                    (selected_df["event_id"] != selected_event_id) &
-                    (selected_df[x_axis] <= selected_event_x_value + similar_events_x_parameter) &
-                    (selected_df[x_axis] >= selected_event_x_value - similar_events_x_parameter) &
-                    (selected_df[y_axis] <= selected_event_y_value + similar_events_y_parameter) &
-                    (selected_df[y_axis] >= selected_event_y_value - similar_events_y_parameter)
+                        (selected_df["event_id"] != selected_event_id) &
+                        (selected_df[x_axis] <= selected_event_x_value + similar_events_x_parameter) &
+                        (selected_df[x_axis] >= selected_event_x_value - similar_events_x_parameter) &
+                        (selected_df[y_axis] <= selected_event_y_value + similar_events_y_parameter) &
+                        (selected_df[y_axis] >= selected_event_y_value - similar_events_y_parameter)
                 )]
             # For dimensionality algos
             # Bug here for negative x and y values
             else:
                 if selected_event_x_value >= 0 and selected_event_y_value >= 0:
                     similar_events_df = selected_df.loc[(
-                        (selected_df["event_id"] != selected_event_id) &
-                        (selected_df[x_axis] <= selected_event_x_value * (1 + similar_events_x_parameter)) &
-                        (selected_df[x_axis] >= selected_event_x_value * (1 - similar_events_x_parameter)) &
-                        (selected_df[y_axis] <= selected_event_y_value * (1 + similar_events_y_parameter)) &
-                        (selected_df[y_axis] >= selected_event_y_value * (1 - similar_events_y_parameter))
+                            (selected_df["event_id"] != selected_event_id) &
+                            (selected_df[x_axis] <= selected_event_x_value * (1 + similar_events_x_parameter)) &
+                            (selected_df[x_axis] >= selected_event_x_value * (1 - similar_events_x_parameter)) &
+                            (selected_df[y_axis] <= selected_event_y_value * (1 + similar_events_y_parameter)) &
+                            (selected_df[y_axis] >= selected_event_y_value * (1 - similar_events_y_parameter))
                     )]
                 elif selected_event_x_value < 0 and selected_event_y_value >= 0:
                     similar_events_df = selected_df.loc[(
-                        (selected_df["event_id"] != selected_event_id) &
-                        (selected_df[x_axis] >= selected_event_x_value * (1 + similar_events_x_parameter)) &
-                        (selected_df[x_axis] <= selected_event_x_value * (1 - similar_events_x_parameter)) &
-                        (selected_df[y_axis] <= selected_event_y_value * (1 + similar_events_y_parameter)) &
-                        (selected_df[y_axis] >= selected_event_y_value * (1 - similar_events_y_parameter))
+                            (selected_df["event_id"] != selected_event_id) &
+                            (selected_df[x_axis] >= selected_event_x_value * (1 + similar_events_x_parameter)) &
+                            (selected_df[x_axis] <= selected_event_x_value * (1 - similar_events_x_parameter)) &
+                            (selected_df[y_axis] <= selected_event_y_value * (1 + similar_events_y_parameter)) &
+                            (selected_df[y_axis] >= selected_event_y_value * (1 - similar_events_y_parameter))
                     )]
                 elif selected_event_x_value >= 0 and selected_event_y_value < 0:
                     similar_events_df = selected_df.loc[(
-                        (selected_df["event_id"] != selected_event_id) &
-                        (selected_df[x_axis] <= selected_event_x_value * (1 + similar_events_x_parameter)) &
-                        (selected_df[x_axis] >= selected_event_x_value * (1 - similar_events_x_parameter)) &
-                        (selected_df[y_axis] >= selected_event_y_value * (1 + similar_events_y_parameter)) &
-                        (selected_df[y_axis] <= selected_event_y_value * (1 - similar_events_y_parameter))
+                            (selected_df["event_id"] != selected_event_id) &
+                            (selected_df[x_axis] <= selected_event_x_value * (1 + similar_events_x_parameter)) &
+                            (selected_df[x_axis] >= selected_event_x_value * (1 - similar_events_x_parameter)) &
+                            (selected_df[y_axis] >= selected_event_y_value * (1 + similar_events_y_parameter)) &
+                            (selected_df[y_axis] <= selected_event_y_value * (1 - similar_events_y_parameter))
                     )]
                 else:
                     similar_events_df = selected_df.loc[(
-                        (selected_df["event_id"] != selected_event_id) &
-                        (selected_df[x_axis] >= selected_event_x_value * (1 + similar_events_x_parameter)) &
-                        (selected_df[x_axis] <= selected_event_x_value * (1 - similar_events_x_parameter)) &
-                        (selected_df[y_axis] >= selected_event_y_value * (1 + similar_events_y_parameter)) &
-                        (selected_df[y_axis] <= selected_event_y_value * (1 - similar_events_y_parameter))
+                            (selected_df["event_id"] != selected_event_id) &
+                            (selected_df[x_axis] >= selected_event_x_value * (1 + similar_events_x_parameter)) &
+                            (selected_df[x_axis] <= selected_event_x_value * (1 - similar_events_x_parameter)) &
+                            (selected_df[y_axis] >= selected_event_y_value * (1 + similar_events_y_parameter)) &
+                            (selected_df[y_axis] <= selected_event_y_value * (1 - similar_events_y_parameter))
                     )]
         # For clustering algos
         else:
             selected_event_cluster = selected_event_df["cluster"]
             similar_events_df = selected_df.loc[(
-                (selected_df["event_id"] != selected_event_id) &
-                (selected_df["cluster"] == selected_event_cluster)
+                    (selected_df["event_id"] != selected_event_id) &
+                    (selected_df["cluster"] == selected_event_cluster)
             )]
         similar_events_df.set_index("event_id", inplace=True)
 
@@ -456,9 +456,14 @@ def dynamic_env(df):
         # Build a download widget which can download a csv file including the selection of similar events.
         file_name_input_widgets = pn.widgets.TextInput(value='filename.csv')
 
+        group_name_widgets = pn.widgets.TextInput(value='groupname')
+
         def _download_callback():
             sio = io.StringIO()
-            similar_events_tabs.selected_dataframe.to_csv(sio, index=False)
+            selected_similar_events_df = similar_events_tabs.selected_dataframe
+            selected_similar_events_df.insert(len(selected_similar_events_df.columns), 'group_name',
+                                              group_name_widgets.value)
+            selected_similar_events_df.to_csv(sio, index=False)
             sio.seek(0)
             return sio
 
@@ -490,7 +495,9 @@ def dynamic_env(df):
                 pn.WidgetBox(
                     "#### Simiar events:",
                     "A total of " + str(len(similar_events_df.index)) + " similar events are found.",
-                    pn.Column(pn.Row("Please enter the name of the downloaded file:",
+                    pn.Column(pn.Row("Please enter the group name of selected events:",
+                                     group_name_widgets),
+                              pn.Row("Please enter the name of the downloaded file:",
                                      file_name_input_widgets, download_widget), similar_events_tabs, align='end'),
                     width=1000
                 )
@@ -510,25 +517,26 @@ def dynamic_env(df):
                     target_index = selection[i]
                     # Event page element - header
                     target_similar_event_header = "#### Similar event number " + str(i + 1) + ":"
-                        # Read the target event from the dict
+                    # Read the target event from the dict
                     if target_index in similar_events_dict:
                         similar_events_row.append(pn.Spacer(
                             background="lightgrey",
                             width=1,
                             height=1050
-                            )
+                        )
                         )
                         similar_events_row.append(pn.Column(
                             target_similar_event_header,
                             similar_events_dict.get(target_index)[0],
                             similar_events_dict.get(target_index)[1]
-                            )
+                        )
                         )
                     else:
                         # Read the target event CSV file
                         target_similar_event_df = similar_events_df.iloc[selection[i]]
                         target_similar_event_csv_filename = os.getcwd() + os.sep + "event_data" + \
-                            os.sep + target_similar_event_df["input_event_csv_filename"] + ".csv"
+                                                            os.sep + target_similar_event_df[
+                                                                "input_event_csv_filename"] + ".csv"
                         target_similar_event_details_df = pd.read_csv(target_similar_event_csv_filename, header=0)
 
                         # Extract the event data
@@ -592,17 +600,18 @@ def dynamic_env(df):
                             background="lightgrey",
                             width=1,
                             height=1050
-                            )
+                        )
                         )
                         similar_events_row.append(pn.Column(
                             target_similar_event_header,
                             target_similar_event_data_box,
                             target_similar_event_waveforms_box
-                            )
+                        )
                         )
                         similar_events_dict[target_index] = \
                             [target_similar_event_data_box, target_similar_event_waveforms_box]
                 return similar_events_row
+
         event_page.append(build_similar_events)
 
         # Return the event page
@@ -691,7 +700,7 @@ def dynamic_env(df):
                         None,
                         dr_similar_events_x_value,
                         dr_similar_events_y_value
-                        )
+                    )
 
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
@@ -725,7 +734,7 @@ def dynamic_env(df):
                         None,
                         dr_similar_events_x_value,
                         dr_similar_events_y_value
-                        )
+                    )
 
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
@@ -767,7 +776,7 @@ def dynamic_env(df):
                         clustering_value,
                         None,
                         None
-                        )
+                    )
 
             # Add overlay for centroids
             return pn.Tabs(
@@ -809,7 +818,7 @@ def dynamic_env(df):
                         clustering_value,
                         None,
                         None
-                        )
+                    )
 
             # Add overlay for centroids
             return pn.Tabs(
@@ -851,7 +860,7 @@ def dynamic_env(df):
                         clustering_value,
                         None,
                         None
-                        )
+                    )
 
             # Add overlay for centroids
             return pn.Tabs(
@@ -895,7 +904,7 @@ def dynamic_env(df):
                         clustering_value,
                         None,
                         None
-                        )
+                    )
 
             # Add overlay for centroids
             return pn.Tabs(
@@ -938,7 +947,7 @@ def dynamic_env(df):
                         clustering_value,
                         None,
                         None
-                        )
+                    )
 
             # Add overlay for centroids
             return pn.Tabs(
@@ -981,7 +990,7 @@ def dynamic_env(df):
                         clustering_value,
                         None,
                         None
-                        )
+                    )
 
             # Add overlay for centroids
             return pn.Tabs(
@@ -1001,6 +1010,7 @@ def dynamic_env(df):
             data_exploration
         )
     )
+
 
 ## ========================================================
 ## Add the dynamic panes to the dashboard
