@@ -500,11 +500,20 @@ def dynamic_env(df):
                 pn.WidgetBox(
                     "#### Simiar events:",
                     "A total of " + str(len(similar_events_df.index)) + " similar events are found.",
-                    pn.Column(pn.Row("Please enter the group name of selected events:",
-                                     group_name_widgets),
-                              pn.Row("Please enter the name of the downloaded file:",
-                                     file_name_input_widgets, download_widget), show_similar_events_plots
-                              , similar_events_tabs, align='end'),
+                    pn.Column(
+                        pn.Row(
+                            "Please enter the group name of selected events:",
+                            group_name_widgets
+                            ),
+                        pn.Row(
+                            "Please enter the name of the downloaded file:", 
+                            file_name_input_widgets, 
+                            download_widget
+                            ), 
+                        show_similar_events_plots,
+                        similar_events_tabs, 
+                        align='end'
+                        ),
                     width=1000
                 )
             )
@@ -615,6 +624,7 @@ def dynamic_env(df):
                             target_similar_event_waveforms_box
                         )
                         )
+                        # Store the elements in the cache dictionary
                         similar_events_dict[target_index] = \
                             [target_similar_event_data_box, target_similar_event_waveforms_box]
                 return similar_events_row
@@ -1023,4 +1033,3 @@ def dynamic_env(df):
 ## Add the dynamic panes to the dashboard
 app.main.append(dynamic_env)
 app.servable()
-# app.save('test_interactive_script.html', resources=INLINE)
