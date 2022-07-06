@@ -117,11 +117,11 @@ model_name = "pqd_cnn_test01_dataset05_model.h5"
 model_path = current_dir + os.sep + "trained_models" + os.sep + model_name
 cnn = models.load_model(model_path)
 
-# Define a pd dataframe
-df_columns = ["image_name", "wave", "flickers", "harmonics", "interruptions", "interruptions_harmonics",
-                "osc_transients", "sags", "sags_harmonics", "spikes", "swells", "swells_harmonics"]
+# # Define a pd dataframe
+# df_columns = ["image_name", "wave", "flickers", "harmonics", "interruptions", "interruptions_harmonics",
+#                 "osc_transients", "sags", "sags_harmonics", "spikes", "swells", "swells_harmonics"]
 
-df = pd.DataFrame(columns=df_columns)
+# df = pd.DataFrame(columns=df_columns)
 
 # Import the prediction dataset
 prediction_set_path = current_dir + os.sep + "prediction_data"
@@ -152,7 +152,7 @@ for image_name in prediction_set:
         )
         predictions = cnn.predict(prediction_image_array)
         for i in range(10):
-            output_file.loc[input_event_csv_filename, wave.lower()+'_'+col_names[i]] = predictions[0][i]
+            output_file.loc[input_event_csv_filename, wave.lower()+'_'+col_names[i]] = predictions[0][i]            ### Use input_event_csv_filname as the index to identify which cell to go into
         count += 1
 
 # Save the pd dataframe as a CSV file
