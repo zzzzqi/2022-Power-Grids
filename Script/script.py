@@ -155,5 +155,10 @@ for image_name in prediction_set:
             output_file.loc[input_event_csv_filename, wave.lower()+'_'+col_names[i]] = predictions[0][i]            ### Use input_event_csv_filname as the index to identify which cell to go into
         count += 1
 
+# change the positions of columns
+output_file.reset_index(inplace=True) # option 'inplace' means keep the change
+output_file = output_file.reindex(columns=df_columns_predictions)
+
+
 # Save the pd dataframe as a CSV file
 output_file.to_csv(current_dir + os.sep + "output.csv")
