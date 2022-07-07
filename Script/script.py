@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 import tensorflow as tf
-from tensorflow.keras import utils, models, preprocessing
+from tensorflow.keras import models, preprocessing
 from enum import Enum
 import csv
 
@@ -156,8 +156,8 @@ for image_name in prediction_set:
         count += 1
 
 # change the positions of columns
-output_file.reset_index(inplace=True) # option 'inplace' means keep the change
-output_file = output_file.reindex(columns=df_columns_predictions)
+# output_file.reset_index(inplace=True) # option 'inplace' means keep the change
+# output_file = output_file.reindex(columns=df_columns_predictions)
 
 
 # Save the pd dataframe as a CSV file
