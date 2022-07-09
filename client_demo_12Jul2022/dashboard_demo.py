@@ -73,7 +73,7 @@ def dynamic_env(df):
         df = pd.DataFrame(np.random.uniform(0, 1, size=(100, 60)),
                           columns=["dummy_axis" + str(i) for i in range(0, 60)])
     else:
-        metadata_df = pd.read_csv(io.BytesIO(file_input.value), header=0, usecols=range(0, 5))
+        metadata_df = pd.read_csv(io.BytesIO(file_input.value), header=0, usecols=range(0, 4))
         df = pd.read_csv(io.BytesIO(file_input.value), header=0, usecols=range(5, 65))
     metadata_df = metadata_df.dropna()
     df = df.dropna()
@@ -438,54 +438,40 @@ def dynamic_env(df):
             # For no dimensionality algos
             if (x_axis != "PC 1" and x_axis != "PC 2" and x_axis != "UMAP 1" and x_axis != "UMAP 2"):
                 similar_events_df = selected_df.loc[(
-                        (selected_df["event_id"] != selected_event_id) &
                         (selected_df[x_axis] <= selected_event_x_value + similar_events_x_parameter) &
                         (selected_df[x_axis] >= selected_event_x_value - similar_events_x_parameter) &
                         (selected_df[y_axis] <= selected_event_y_value + similar_events_y_parameter) &
-                        (selected_df[y_axis] >= selected_event_y_value - similar_events_y_parameter)
-                )]
+                        (selected_df[y_axis] >= selected_event_y_value - similar_events_y_parameter))]
             # For dimensionality algos
-            # Bug here for negative x and y values
             else:
                 if selected_event_x_value >= 0 and selected_event_y_value >= 0:
                     similar_events_df = selected_df.loc[(
-                            (selected_df["event_id"] != selected_event_id) &
                             (selected_df[x_axis] <= selected_event_x_value * (1 + similar_events_x_parameter)) &
                             (selected_df[x_axis] >= selected_event_x_value * (1 - similar_events_x_parameter)) &
                             (selected_df[y_axis] <= selected_event_y_value * (1 + similar_events_y_parameter)) &
-                            (selected_df[y_axis] >= selected_event_y_value * (1 - similar_events_y_parameter))
-                    )]
+                            (selected_df[y_axis] >= selected_event_y_value * (1 - similar_events_y_parameter)))]
                 elif selected_event_x_value < 0 and selected_event_y_value >= 0:
                     similar_events_df = selected_df.loc[(
-                            (selected_df["event_id"] != selected_event_id) &
                             (selected_df[x_axis] >= selected_event_x_value * (1 + similar_events_x_parameter)) &
                             (selected_df[x_axis] <= selected_event_x_value * (1 - similar_events_x_parameter)) &
                             (selected_df[y_axis] <= selected_event_y_value * (1 + similar_events_y_parameter)) &
-                            (selected_df[y_axis] >= selected_event_y_value * (1 - similar_events_y_parameter))
-                    )]
+                            (selected_df[y_axis] >= selected_event_y_value * (1 - similar_events_y_parameter)))]
                 elif selected_event_x_value >= 0 and selected_event_y_value < 0:
                     similar_events_df = selected_df.loc[(
-                            (selected_df["event_id"] != selected_event_id) &
                             (selected_df[x_axis] <= selected_event_x_value * (1 + similar_events_x_parameter)) &
                             (selected_df[x_axis] >= selected_event_x_value * (1 - similar_events_x_parameter)) &
                             (selected_df[y_axis] >= selected_event_y_value * (1 + similar_events_y_parameter)) &
-                            (selected_df[y_axis] <= selected_event_y_value * (1 - similar_events_y_parameter))
-                    )]
+                            (selected_df[y_axis] <= selected_event_y_value * (1 - similar_events_y_parameter)))]
                 else:
                     similar_events_df = selected_df.loc[(
-                            (selected_df["event_id"] != selected_event_id) &
                             (selected_df[x_axis] >= selected_event_x_value * (1 + similar_events_x_parameter)) &
                             (selected_df[x_axis] <= selected_event_x_value * (1 - similar_events_x_parameter)) &
                             (selected_df[y_axis] >= selected_event_y_value * (1 + similar_events_y_parameter)) &
-                            (selected_df[y_axis] <= selected_event_y_value * (1 - similar_events_y_parameter))
-                    )]
+                            (selected_df[y_axis] <= selected_event_y_value * (1 - similar_events_y_parameter)))]
         # For clustering algos
         else:
             selected_event_cluster = selected_event_df["cluster"]
-            similar_events_df = selected_df.loc[(
-                    (selected_df["event_id"] != selected_event_id) &
-                    (selected_df["cluster"] == selected_event_cluster)
-            )]
+            similar_events_df = selected_df.loc[((selected_df["cluster"] == selected_event_cluster))]
         similar_events_df.set_index("event_id", inplace=True)
 
         # Build similar events summary as a Tabulator
@@ -494,8 +480,9 @@ def dynamic_env(df):
             selectable="checkboxes",
             layout="fit_data_fill",
             pagination="local",
-            width=975,
-            page_size=1000,
+            page_size=10000,
+            disabled=True,
+            width=975
         )
 
         # Build a download widget which can download a csv file including the selection of similar events
@@ -563,7 +550,7 @@ def dynamic_env(df):
                             f"""
                             ** _Identifying similar events:_ **
                             <ul>
-                            <li> A total of {str(len(similar_events_df.index))} similar events are identified.
+                            <li> A total of {str(len(similar_events_df.index) - 1)} similar events are identified.
                             <li> To display the selected events from the summary below:
                             </ul>
                             """,
