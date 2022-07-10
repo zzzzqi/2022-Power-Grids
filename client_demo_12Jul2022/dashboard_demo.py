@@ -352,6 +352,34 @@ def dynamic_env(df):
             similar_events_x_parameter,
             similar_events_y_parameter):
 
+        # Build a helper function to identify the top PQD predictions for the waveforms
+        # Return a dictionary with the waveform names as keys, and their top PQD types and scores as values
+        def identify_top_predictions(df, event_id):
+            df.set_index("event_id", inplace=True)
+            waveform_names = [
+                "Vab", "Vbc", "Vca", "Ia", "Ib", "Ic"
+            ]
+            pqd_names = [
+                "flickers", "harmonics", "interruptions", "interruptions_harmonics", "osc_transients",
+                "sags", "sags_harmonics", "spikes", "swells", "swells_harmonics"
+            ]
+            waveform_predictions_dict = dict()
+
+            for i in range(len(waveform_names)):
+                target_waveform = waveform_names[i]
+                top_pqd_name = ""
+                top_pqd_score = -1
+                for j in range(len(pqd_names)):
+                    target_column_name = target_waveform.lower() + "_" + pqd_names[j]
+                    target_column_value = df.loc[event_id, target_column_name]
+                    
+                    if target_column_value > top_pqd_score:
+                        top_pqd_name = pqd_names[j]
+                        top_pqd_score = target_column_value
+                waveform_predictions_dict[target_waveform] = [top_pqd_name, top_pqd_score]
+
+            return waveform_predictions_dict
+
         # Select the event data CSV file
         selected_event_df = selected_df.iloc[selection[0] - 1]
         selected_event_csv_filename = os.getcwd() + os.sep + "event_data" + os.sep + \
@@ -362,6 +390,8 @@ def dynamic_env(df):
         selected_event_id = selected_event_df["event_id"]
         selected_event_x_value = selected_event_df[x_axis]
         selected_event_y_value = selected_event_df[y_axis]
+        selected_event_predictions_dict = identify_top_predictions(
+            pd.concat([metadata_df, df], axis=1), selected_event_id)
 
         # Build event data as a Row
         event_data = pn.Row(
@@ -384,8 +414,8 @@ def dynamic_env(df):
                 f"""
                 ** _Axis values:_ **
                 <ul>
-                <li> {str(x_axis)}: {str(selected_event_x_value)}
-                <li> {str(y_axis)}: {str(selected_event_y_value)}
+                <li> {str(x_axis)}: {"%.5f" % selected_event_x_value}
+                <li> {str(y_axis)}: {"%.5f" % selected_event_y_value}
                 """,
                 width=300
             )
@@ -407,6 +437,41 @@ def dynamic_env(df):
                     """,
                 )
             )
+        event_waveform_predictons = pn.Row(
+            pn.Column(
+                f"""
+                ** _Top PQD predictions for event's voltages:_ **
+                <ul>
+                <li> Vab: {selected_event_predictions_dict["Vab"][0]} 
+                    ({"%.5f" % selected_event_predictions_dict["Vab"][1]})
+                <li> Vbc: {selected_event_predictions_dict["Vbc"][0]} 
+                    ({"%.5f" % selected_event_predictions_dict["Vbc"][1]})
+                <li> Vca: {selected_event_predictions_dict["Vca"][0]} 
+                    ({"%.5f" % selected_event_predictions_dict["Vca"][1]})
+                </ul>
+                """,
+                width=300
+            ),
+            pn.Spacer(
+                background="lightgrey",
+                width=1,
+                height=110
+            ),
+            pn.Column(
+                f"""
+                ** _Top PQD predictions for event's currents:_ **
+                <ul>
+                <li> Ia: {selected_event_predictions_dict["Ia"][0]} 
+                    ({"%.5f" % selected_event_predictions_dict["Ia"][1]})
+                <li> Ib: {selected_event_predictions_dict["Ib"][0]} 
+                    ({"%.5f" % selected_event_predictions_dict["Ib"][1]})
+                <li> Ic: {selected_event_predictions_dict["Ic"][0]} 
+                    ({"%.5f" % selected_event_predictions_dict["Ic"][1]})
+                </ul>
+                """,
+                width=300
+            )
+        )
 
         # Plot the event waveforms
         voltages_waveforms = selected_event_details_df.hvplot.line(
@@ -533,6 +598,12 @@ def dynamic_env(df):
                 pn.WidgetBox(
                     "#### Event data:",
                     event_data,
+                    pn.Spacer(
+                        background="lightgrey",
+                        width=975,
+                        height=1
+                    ),
+                    event_waveform_predictons,
                     width=1000
                 ),
                 # Event page element - waveforms
@@ -616,7 +687,7 @@ def dynamic_env(df):
                         similar_events_row.append(pn.Spacer(
                             background="lightgrey",
                             width=1,
-                            height=1125
+                            height=1260
                         )
                         )
                         similar_events_row.append(pn.Column(
@@ -639,6 +710,9 @@ def dynamic_env(df):
                         target_similar_event_asset_name = target_similar_event_details_df["asset_name"].values[0]
                         target_similar_event_x_value = target_similar_event_df[x_axis]
                         target_similar_event_y_value = target_similar_event_df[y_axis]
+                        target_similar_event_predictions_dict = identify_top_predictions(
+                            pd.concat([metadata_df, df], axis=1), target_similar_event_id
+                        )
 
                         # Build the event data as a Row
                         target_similar_event_data = pn.Row(
@@ -661,8 +735,8 @@ def dynamic_env(df):
                                 f"""
                                 ** _Axis values:_ **
                                 <ul>
-                                <li> {str(x_axis)}: {str(target_similar_event_x_value)}
-                                <li> {str(y_axis)}: {str(target_similar_event_y_value)}
+                                <li> {str(x_axis)}: {"%.5f" % target_similar_event_x_value}
+                                <li> {str(y_axis)}: {"%.5f" % target_similar_event_y_value}
                                 """,
                                 width=300
                             )
@@ -684,6 +758,41 @@ def dynamic_env(df):
                                     """,
                                 )
                             )
+                        target_similar_event_waveform_predictons = pn.Row(
+                            pn.Column(
+                                f"""
+                                ** _Top PQD predictions for event's voltages:_ **
+                                <ul>
+                                <li> Vab: {target_similar_event_predictions_dict["Vab"][0]} 
+                                    ({"%.5f" % target_similar_event_predictions_dict["Vab"][1]})
+                                <li> Vbc: {target_similar_event_predictions_dict["Vbc"][0]} 
+                                    ({"%.5f" % target_similar_event_predictions_dict["Vbc"][1]})
+                                <li> Vca: {target_similar_event_predictions_dict["Vca"][0]} 
+                                    ({"%.5f" % target_similar_event_predictions_dict["Vca"][1]})
+                                </ul>
+                                """,
+                                width=300
+                            ),
+                            pn.Spacer(
+                                background="lightgrey",
+                                width=1,
+                                height=110
+                            ),
+                            pn.Column(
+                                f"""
+                                ** _Top PQD predictions for event's currents:_ **
+                                <ul>
+                                <li> Ia: {target_similar_event_predictions_dict["Ia"][0]} 
+                                    ({"%.5f" % target_similar_event_predictions_dict["Ia"][1]})
+                                <li> Ib: {target_similar_event_predictions_dict["Ib"][0]} 
+                                    ({"%.5f" % target_similar_event_predictions_dict["Ib"][1]})
+                                <li> Ic: {target_similar_event_predictions_dict["Ic"][0]} 
+                                    ({"%.5f" % target_similar_event_predictions_dict["Ic"][1]})
+                                </ul>
+                                """,
+                                width=300
+                            )
+                        )
 
                         # Plot the target event waveforms
                         voltages_waveforms = target_similar_event_details_df.hvplot.line(
@@ -713,6 +822,12 @@ def dynamic_env(df):
                         target_similar_event_data_box = pn.WidgetBox(
                             "#### Event data:",
                             target_similar_event_data,
+                            pn.Spacer(
+                                background="lightgrey",
+                                width=975,
+                                height=1
+                            ),
+                            target_similar_event_waveform_predictons,
                             width=1000
                         )
                         # Event page element - waveforms
@@ -725,7 +840,7 @@ def dynamic_env(df):
                         similar_events_row.append(pn.Spacer(
                             background="lightgrey",
                             width=1,
-                            height=1125
+                            height=1260
                         )
                         )
                         similar_events_row.append(pn.Column(

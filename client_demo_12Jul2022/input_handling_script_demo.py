@@ -115,7 +115,7 @@ event_waveform_images = tf.io.gfile.listdir(psr_dir)
 # Log the prediction scores in the output CSV file
 pqd_categories = [
     "flickers", "harmonics", "interruptions", "interruptions_harmonics", "osc_transients",
-     "sags", "sags_harmonics", "spikes", "swells", "swells_harmonics"
+    "sags", "sags_harmonics", "spikes", "swells", "swells_harmonics"
     ]
 output_df = pd.read_csv(output_csv_filename, index_col=4)
 for image_name in event_waveform_images:
