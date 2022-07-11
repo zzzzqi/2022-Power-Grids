@@ -880,7 +880,10 @@ def dynamic_env(df):
                          dr_similar_events_x_value, dr_similar_events_y_value):
         # Option A: No dimensionality reduction nor clustering algos
         if dr_value == "Nil" and clustering_value == "Nil":
-            selected_df = basic_df[[basic_x_value, basic_y_value]]
+            if basic_x_value == basic_y_value:
+                selected_df = basic_df[[basic_x_value]]
+            else:
+                selected_df = basic_df[[basic_x_value, basic_y_value]]
             selected_df = pd.concat([metadata_df, selected_df], axis=1)
 
             selector = alt.selection_single(name='event_id')
@@ -985,7 +988,10 @@ def dynamic_env(df):
         # Opton D: No dimensionality reduction and K-Means clustering algo
         elif dr_value == "Nil" and clustering_value == "K-Means":
             basic_kmeans = KMeans(n_clusters=k_means_n_clusters)
-            selected_df = basic_df[[basic_x_value, basic_y_value]]
+            if basic_x_value == basic_y_value:
+                selected_df = basic_df[[basic_x_value]]
+            else:
+                selected_df = basic_df[[basic_x_value, basic_y_value]]
             y_pred = basic_kmeans.fit_predict(selected_df)
 
             y_pred_df = pd.DataFrame(data={"cluster": y_pred})
@@ -1112,9 +1118,11 @@ def dynamic_env(df):
         # Option G: No dimensionality reduction algo and DBSCAN clustering algo
         elif dr_value == "Nil" and clustering_value == "DBSCAN":
             basic_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
-            selected_df = basic_df[[basic_x_value, basic_y_value]]
+            if basic_x_value == basic_y_value:
+                selected_df = basic_df[[basic_x_value]]
+            else:
+                selected_df = basic_df[[basic_x_value, basic_y_value]]
             y_pred = basic_dbscan.fit_predict(selected_df)
-            labels = basic_dbscan.labels_
 
             y_pred_df = pd.DataFrame(data={"cluster": y_pred})
             selected_df = pd.concat([metadata_df, selected_df, y_pred_df], axis=1)
@@ -1157,7 +1165,6 @@ def dynamic_env(df):
         elif dr_value == "PCA" and clustering_value == "DBSCAN":
             pca_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
             y_pred = pca_dbscan.fit_predict(pca_df)
-            labels = pca_dbscan.labels_
 
             y_pred_df = pd.DataFrame(data={"cluster": y_pred})
             selected_df = pd.concat([metadata_df, pca_df, y_pred_df], axis=1)
@@ -1200,7 +1207,6 @@ def dynamic_env(df):
         elif dr_value == "UMAP" and clustering_value == "DBSCAN":
             umap_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
             y_pred = umap_dbscan.fit_predict(umap_df)
-            labels = umap_dbscan.labels_
 
             y_pred_df = pd.DataFrame(data={"cluster": y_pred})
             selected_df = pd.concat([metadata_df, umap_df, y_pred_df], axis=1)
