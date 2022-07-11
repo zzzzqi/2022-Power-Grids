@@ -142,7 +142,7 @@ class PG_CNN(object):
 
             predictions_res = PG_CNN.cnn.predict(img)
 
-            event_index = "event" + str(cnt) + each_item
+            event_index = "event_" + str(cnt) + "_" + each_item
 
             index = np.argmax(predictions_res)
             each_event = [self.df_columns[index], predictions_res[0][index]]
