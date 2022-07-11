@@ -60,7 +60,7 @@ def phase_space_graph(import_csv, export_path, tau):
         plt.draw()
         fig.savefig(export_path+"_{0}.png".format(waveform.value), dpi=100)
         colour_to_gray(export_path+"_{0}.png".format(waveform.value))
-        # plt.close("all") # With this statement, the program will take more time
+        plt.close(fig)
 
 
 # Function for convert the colour space from RGB to gray scale

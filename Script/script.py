@@ -51,6 +51,7 @@ def phase_space_graph(import_csv, export_path, tau=20):
         image.set_data(signal[waveform.value], np.roll(signal[waveform.value], tau))
         plt.draw()
         fig.savefig(export_path+"_{0}.png".format(waveform.value), dpi=100)
+        plt.close(fig)
         colour_to_gray(export_path+"_{0}.png".format(waveform.value))
         # plt.close("all") # With this statement, the program will take more time
 
@@ -108,57 +109,57 @@ f.close()
 
 
 
-
-### Feed images into CNN model for scores ###
-
-# Load the trained CNN model
-model_name = "pqd_cnn_test01_dataset05_model.h5"
-# model_path = current_directory + os.sep + model_name
-model_path = current_dir + os.sep + "trained_models" + os.sep + model_name
-cnn = models.load_model(model_path)
-
-# # Define a pd dataframe
-# df_columns = ["image_name", "wave", "flickers", "harmonics", "interruptions", "interruptions_harmonics",
+#
+# ### Feed images into CNN model for scores ###
+#
+# # Load the trained CNN model
+# model_name = "pqd_cnn_test01_dataset05_model.h5"
+# # model_path = current_directory + os.sep + model_name
+# model_path = current_dir + os.sep + "trained_models" + os.sep + model_name
+# cnn = models.load_model(model_path)
+#
+# # # Define a pd dataframe
+# # df_columns = ["image_name", "wave", "flickers", "harmonics", "interruptions", "interruptions_harmonics",
+# #                 "osc_transients", "sags", "sags_harmonics", "spikes", "swells", "swells_harmonics"]
+#
+# # df = pd.DataFrame(columns=df_columns)
+#
+# # Import the prediction dataset
+# prediction_set_path = current_dir + os.sep + "prediction_data"
+# prediction_set = tf.io.gfile.listdir(prediction_set_path)
+#
+# # Iterate through the dataset, and make predictions with the trained CNN model.
+# # Log the prediction scores in the pd dataframe
+#
+# col_names = ["flickers", "harmonics", "interruptions", "interruptions_harmonics",
 #                 "osc_transients", "sags", "sags_harmonics", "spikes", "swells", "swells_harmonics"]
-
-# df = pd.DataFrame(columns=df_columns)
-
-# Import the prediction dataset
-prediction_set_path = current_dir + os.sep + "prediction_data"
-prediction_set = tf.io.gfile.listdir(prediction_set_path)
-
-# Iterate through the dataset, and make predictions with the trained CNN model.
-# Log the prediction scores in the pd dataframe
-
-col_names = ["flickers", "harmonics", "interruptions", "interruptions_harmonics",
-                "osc_transients", "sags", "sags_harmonics", "spikes", "swells", "swells_harmonics"]
-count = 0
-output_file = pd.read_csv('output.csv', index_col=4)
-for image_name in prediction_set:
-    if re.search(".png$", image_name) is not None:
-        wave = image_name[:len(image_name)-4].split("_")[-1]
-        input_event_csv_filename = image_name[:len(image_name)-4].rsplit("_", 1)[0]
-
-        prediction_image = preprocessing.image.load_img(
-            path=prediction_set_path + "/" + image_name,
-            color_mode='grayscale',
-            target_size=(200, 200)
-        )
-        prediction_image_array = preprocessing.image.img_to_array(
-            prediction_image
-        )
-        prediction_image_array = np.array(
-            [prediction_image_array]
-        )
-        predictions = cnn.predict(prediction_image_array)
-        for i in range(10):
-            output_file.loc[input_event_csv_filename, wave.lower()+'_'+col_names[i]] = predictions[0][i]            ### Use input_event_csv_filname as the index to identify which cell to go into
-        count += 1
-
-# change the positions of columns
-# output_file.reset_index(inplace=True) # option 'inplace' means keep the change
-# output_file = output_file.reindex(columns=df_columns_predictions)
-
-
-# Save the pd dataframe as a CSV file
-output_file.to_csv(current_dir + os.sep + "output.csv")
+# count = 0
+# output_file = pd.read_csv('output.csv', index_col=4)
+# for image_name in prediction_set:
+#     if re.search(".png$", image_name) is not None:
+#         wave = image_name[:len(image_name)-4].split("_")[-1]
+#         input_event_csv_filename = image_name[:len(image_name)-4].rsplit("_", 1)[0]
+#
+#         prediction_image = preprocessing.image.load_img(
+#             path=prediction_set_path + "/" + image_name,
+#             color_mode='grayscale',
+#             target_size=(200, 200)
+#         )
+#         prediction_image_array = preprocessing.image.img_to_array(
+#             prediction_image
+#         )
+#         prediction_image_array = np.array(
+#             [prediction_image_array]
+#         )
+#         predictions = cnn.predict(prediction_image_array)
+#         for i in range(10):
+#             output_file.loc[input_event_csv_filename, wave.lower()+'_'+col_names[i]] = predictions[0][i]            ### Use input_event_csv_filname as the index to identify which cell to go into
+#         count += 1
+#
+# # change the positions of columns
+# # output_file.reset_index(inplace=True) # option 'inplace' means keep the change
+# # output_file = output_file.reindex(columns=df_columns_predictions)
+#
+#
+# # Save the pd dataframe as a CSV file
+# output_file.to_csv(current_dir + os.sep + "output.csv")
