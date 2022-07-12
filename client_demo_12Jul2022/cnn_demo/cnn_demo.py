@@ -163,6 +163,25 @@ class PG_CNN(object):
         fp = 0
         tn = 0
 
+        # 初始化cm
+        content = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+
+        ]
+
+        cm = pd.DataFrame(data=content, index=self.df_columns, columns=self.df_columns)
+        print(cm)
+        print()
+
         # 用test_set数据，validation
         # validation_folder = tf.io.gfile.listdir("./pqd_dataset_05/validation_set")
         folder_name_list = self.train_dataset.class_names
@@ -178,8 +197,13 @@ class PG_CNN(object):
             # print("each_images_folder是: " + each_images_folder)
             each_type_images_set = tf.io.gfile.listdir(each_images_folder)
 
+            each_tp = 0
+            each_fn = 0
+
             for each_img in each_type_images_set:
                 real = each_folder
+
+
                 # print("real标、签是：" + real)
                 # print("each_img是 " + each_img)
                 # print(each_images_folder + "/" + each_img)
@@ -197,7 +221,6 @@ class PG_CNN(object):
                     # .h5 file load in predict method
                     predictions_res = PG_CNN.cnn.predict(img)
                     index = np.argmax(predictions_res)
-
                     predict = self.df_columns[index]
                     # print("202. predict 是：%s" % predict)
 
@@ -215,15 +238,23 @@ class PG_CNN(object):
 
                     if real == each_folder and predict == each_folder:
                         tp = tp + 1
+                        each_tp = each_tp + 1
+                        cm[predict][real] = each_tp
+
                     # 真发生，预测没发生
                     elif real == each_folder and predict != each_folder:
                         fn = fn + 1
+                        each_fn = each_fn + 1
+                        cm[predict][real] = each_fn
+
                     # 真没发生，预测发生
                     elif real != each_folder and predict == each_folder:
                         fp = fp + 1
+
                     # 真没发生，预测没发生
                     elif real != each_folder and predict != each_folder:
                         tn = tn + 1
+
                 else:
                     print("PNG format image required.")
 
@@ -231,10 +262,11 @@ class PG_CNN(object):
         recall = tp / (tp + fn)
         F1_score = 2 * ((precision * recall) / (precision + recall))
 
-        # print("tp: %s" % tp)
-        # print("fn: %s" % fn)
-        # print("fp: %s" % fp)
-        # print("tn: %s" % tn)
+        print("tp: %s" % tp)
+        print("fn: %s" % fn)
+        print("fp: %s" % fp)
+        print("tn: %s" % tn)
+
 
         # print("name list: %s" % name_list)
         # print("pred list: %s" % pred_list)
@@ -243,6 +275,10 @@ class PG_CNN(object):
         # print(len(pred_list))
         # print(len(real_list))
 
+        print(cm)
+        cm.to_csv("test.csv")
+
+        '''
         # Confusion_Matrix visualization
         content = [
             [tp, fn],
@@ -261,6 +297,7 @@ class PG_CNN(object):
         print("precision: %.2f" % precision)
         print("recall: %.2f" % recall)
         print("F1_score: %.2f" % F1_score)
+        '''
 
         return None
 
