@@ -1,0 +1,11 @@
+,flickers,harmonics,interruptions,interruptions_harmonics,osc_transients,sags,sags_harmonics,spikes,swells,swells_harmonics
+flickers,140,0,0,0,0,0,0,0,0,0
+harmonics,0,140,0,0,0,0,0,0,0,0
+interruptions,0,0,127,0,0,13,0,0,0,0
+interruptions_harmonics,0,0,0,135,0,0,5,0,0,0
+osc_transients,5,0,0,0,134,4,0,6,0,0
+sags,0,0,6,0,0,134,0,0,0,0
+sags_harmonics,0,2,0,11,0,0,129,0,0,0
+spikes,0,0,0,0,0,0,0,139,1,0
+swells,0,0,0,0,0,0,0,0,140,0
+swells_harmonics,0,0,0,0,0,0,0,0,0,140

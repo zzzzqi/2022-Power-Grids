@@ -275,21 +275,9 @@ class PG_CNN(object):
         # print(len(pred_list))
         # print(len(real_list))
 
-        print(cm)
-        cm.to_csv("test.csv")
-
-        '''
-        # Confusion_Matrix visualization
-        content = [
-            [tp, fn],
-            [fp, tn]
-        ]
-        index_name = ["actual_ture", "actual_false"]
-        colum_name = ["predict_positive", "predict_negative"]
-
-        cm = pd.DataFrame(data=content, index=index_name, columns=colum_name)
         print("------ confusion_matrix is stated below ------")
         print(cm)
+        cm.to_csv("./confusion_matrix.csv")
 
         print()
 
@@ -297,7 +285,7 @@ class PG_CNN(object):
         print("precision: %.2f" % precision)
         print("recall: %.2f" % recall)
         print("F1_score: %.2f" % F1_score)
-        '''
+
 
         return None
 
