@@ -74,7 +74,7 @@ def dynamic_env(df):
                           columns=["dummy_axis" + str(i) for i in range(0, 60)])
     else:
         metadata_df = pd.read_csv(io.BytesIO(file_input.value), header=0, usecols=range(0, 4))
-        df = pd.read_csv(io.BytesIO(file_input.value), header=0, usecols=range(5, 65))
+        df = pd.read_csv(io.BytesIO(file_input.value), header=0, usecols=range(4, 64))
     metadata_df = metadata_df.dropna()
     df = df.dropna()
 
