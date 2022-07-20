@@ -13,6 +13,7 @@ from bokeh.models.widgets.tables import NumberFormatter, BooleanFormatter
 from sklearn import decomposition
 from sklearn.cluster import KMeans, DBSCAN, k_means
 import umap.umap_ as umap
+from sklearn.manifold import TSNE
 
 # Enable Bokeh and Panel
 hv.extension('bokeh')
@@ -102,12 +103,27 @@ def dynamic_env(df):
     umap_data = umap_reducer.transform(df)
     umap_labels = ["UMAP 1", "UMAP 2"]
     umap_df = pd.DataFrame(umap_data, columns=umap_labels)
+    # t-SNE
+    tsne = TSNE(2)
+    tsne_data = tsne.fit_transform(df)
+    tsne_labels = ["t-SNE 1", "t-SNE 2"]
+    tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
+    # fig, ax = plt.subplots(1)
+    # sns.scatterplot(x='tsne_1', y='tsne_2', hue='label', data=tsne_result_df, ax=ax,s=120)
+    # lim = (tsne_result.min()-5, tsne_result.max()+5)
+    # ax.set_xlim(lim)
+    # ax.set_ylim(lim)
+    # ax.set_aspect('equal')
+    # ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
+
+    # print(tsne_result.shape)
+
 
     ## ========================================================
     ## Column 1a: The algo-selection column
     # Build the selection dropdown for Dimensionaity Reduction algos
     dr_selection = pn.widgets.Select(
-        options=["Nil", "PCA", "UMAP"]
+        options=["Nil", "PCA", "UMAP", "t-SNE"]
     )
     # Build the selection dropdown for Clustering algos
     clustering_selection = pn.widgets.Select(
@@ -177,6 +193,16 @@ def dynamic_env(df):
         end=50,
         step=5,
         name="Number of samples in a neighbourhood"
+    )
+    # t-SNE selection options
+    tsne_df_x_axis_selection = pn.widgets.Select(
+        name="X-axis: ",
+        options=tsne_labels
+    )
+    tsne_df_y_axis_selection = pn.widgets.Select(
+        name="Y-axis: ",
+        options=tsne_labels,
+        value=tsne_labels[1]
     )
 
     # Build the WidgetBox for plot configuration
@@ -263,6 +289,33 @@ def dynamic_env(df):
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
+        elif dr_value == "t-SNE" and clustering_value == "Nil":
+            return pn.WidgetBox(
+                pn.pane.Markdown("#### Data-exploration pane options: "),
+                tsne_df_x_axis_selection,
+                tsne_df_y_axis_selection,
+                pn.pane.Markdown(""),
+                width=widgetbox_width
+            )
+        elif dr_value == "t-SNE" and clustering_value == "K-Means":
+            return pn.WidgetBox(
+                pn.pane.Markdown("#### Data-exploration pane options: "),
+                tsne_df_x_axis_selection,
+                tsne_df_y_axis_selection,
+                k_means_n_clusters_selection,
+                pn.pane.Markdown(""),
+                width=widgetbox_width
+            )
+        elif dr_value == "t-SNE" and clustering_value == "DBSCAN":
+            return pn.WidgetBox(
+                pn.pane.Markdown("#### Data-exploration pane options: "),
+                tsne_df_x_axis_selection,
+                tsne_df_y_axis_selection,
+                dbscan_max_distance_selection,
+                dbscan_n_samples_selection,
+                pn.pane.Markdown(""),
+                width=widgetbox_width
+            )
 
     ## ========================================================
     ## Column 1c: The similar events configuration column
@@ -317,6 +370,14 @@ def dynamic_env(df):
                 width=widgetbox_width
             )
         elif dr_value == "UMAP" and clustering_value == "Nil":
+            return pn.WidgetBox(
+                pn.pane.Markdown("#### Similar events options: "),
+                dr_similar_events_x_value_selection,
+                dr_similar_events_y_value_selection,
+                pn.pane.Markdown(""),
+                width=widgetbox_width
+            )
+        elif dr_value == "t-SNE" and clustering_value == "Nil":
             return pn.WidgetBox(
                 pn.pane.Markdown("#### Similar events options: "),
                 dr_similar_events_x_value_selection,
@@ -864,6 +925,7 @@ def dynamic_env(df):
                 basic_df_x_axis_selection.param.value, basic_df_y_axis_selection.param.value,
                 pca_df_x_axis_selection.param.value, pca_df_y_axis_selection.param.value,
                 umap_df_x_axis_selection.param.value, umap_df_y_axis_selection.param.value,
+                tsne_df_x_axis_selection.param.value, tsne_df_y_axis_selection.param.value,
                 k_means_n_clusters_selection.param.value,
                 dbscan_max_distance_selection.param.value, dbscan_n_samples_selection.param.value,
                 basic_similar_events_x_value_selection.param.value,
@@ -874,6 +936,7 @@ def dynamic_env(df):
                          basic_x_value, basic_y_value,
                          pca_x_value, pca_y_value,
                          umap_x_value, umap_y_value,
+                         tsne_x_value, tsne_y_value,
                          k_means_n_clusters,
                          dbscan_max_distance_value, dbscan_n_samples_value,
                          basic_similar_events_x_value, basic_similar_events_y_value,
@@ -1245,6 +1308,129 @@ def dynamic_env(df):
                 ("Data-exploration pane", vega_pane),
                 ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
             )
+            
+        # Option J: TSNE and no clustering algo
+        elif dr_value == "t-SNE" and clustering_value == "Nil":
+            selected_df = pd.concat([metadata_df, tsne_df], axis=1)
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
+                x=tsne_x_value,
+                y=tsne_y_value,
+                color=alt.condition(selector, alt.value("navy"), alt.value('lightgray')),
+                tooltip=["event_id", tsne_x_value, tsne_y_value]
+            ).properties(
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return build_event_page(
+                        selection,
+                        selected_df,
+                        tsne_x_value,
+                        tsne_y_value,
+                        None,
+                        dr_similar_events_x_value,
+                        dr_similar_events_y_value
+                    )
+
+            return pn.Tabs(
+                ("Data-exploration pane", vega_pane),
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
+            )
+
+        # Option K: t-SNE and K-Means
+        elif dr_value == "t-SNE" and clustering_value == "K-Means":
+            tsne_kmeans = KMeans(n_clusters=k_means_n_clusters)
+            y_pred = tsne_kmeans.fit_predict(tsne_df)
+
+            y_pred_df = pd.DataFrame(data={"cluster": y_pred})
+            selected_df = pd.concat([metadata_df, tsne_df, y_pred_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
+                x=tsne_x_value,
+                y=tsne_y_value,
+                color=alt.condition(
+                    selector,
+                    alt.Color('cluster:N', scale=alt.Scale(scheme='set1'), legend=None),
+                    alt.value('lightgray')),
+                tooltip=["event_id", tsne_x_value, tsne_y_value, "cluster"]
+            ).properties(
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return build_event_page(
+                        selection,
+                        selected_df,
+                        tsne_x_value,
+                        tsne_y_value,
+                        clustering_value,
+                        None,
+                        None
+                    )
+
+            # Add overlay for centroids
+            return pn.Tabs(
+                ("Data-exploration pane", vega_pane),
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
+            )
+
+        # Option L: t-SNE and DBSCAN
+        elif dr_value == "t-SNE" and clustering_value == "DBSCAN":
+            tsne_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
+            y_pred = tsne_dbscan.fit_predict(tsne_df)
+
+            y_pred_df = pd.DataFrame(data={"cluster": y_pred})
+            selected_df = pd.concat([metadata_df, tsne_df, y_pred_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
+                x=tsne_x_value,
+                y=tsne_y_value,
+                color=alt.condition(
+                    selector,
+                    alt.Color('cluster:N', scale=alt.Scale(scheme='set1'), legend=None),
+                    alt.value('lightgray')),
+                tooltip=["event_id", tsne_x_value, tsne_y_value, "cluster"]
+            ).properties(
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return build_event_page(
+                        selection,
+                        selected_df,
+                        tsne_x_value,
+                        tsne_y_value,
+                        clustering_value,
+                        None,
+                        None
+                    )
+
+            # Add overlay for centroids
+            return pn.Tabs(
+                ("Data-exploration pane", vega_pane),
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
+            )
+
+
+
 
     ## ========================================================
     ## Return the dashboard's dynamic panes
@@ -1258,6 +1444,9 @@ def dynamic_env(df):
             data_exploration
         )
     )
+
+
+
 
 
 ## ========================================================
