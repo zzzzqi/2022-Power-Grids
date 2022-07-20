@@ -244,9 +244,9 @@ def main(filepath, convert, predict, output_name, noimages):
     cnn_model_name = "basic_pqd_cnn.h5"
     cnn_model_path = current_dir + os.sep + "trained_cnn_models" + os.sep + cnn_model_name
 
-    if noimages:al(input_event_dir, cnn_model_path, output_csv_filepath)
+    if noimages:
+        prediction_from_signal(input_event_dir, cnn_model_path, output_csv_filepath)
     else:
-        prediction_from_sign
         if convert:
             convert_signals(input_event_dir, psr_dir, output_csv_filepath)
         
