@@ -92,8 +92,8 @@ def dynamic_env(df):
     ## Dimensionality Reduction algos
     # PCA
     pca = decomposition.PCA(n_components=2)
-    pca.fit(df)
-    pca_data = pca.transform(df)
+    pca.fit(df.copy())
+    pca_data = pca.transform(df.copy())
     pca_labels = ["PC 1", "PC 2"]
     pca_df = pd.DataFrame(pca_data, columns=pca_labels)
     pca_df_headers = list(pca_df.columns)
@@ -1087,7 +1087,11 @@ def dynamic_env(df):
         # Option C: UMAP and no clustering algo
         elif dr_value == "UMAP" and clustering_value == "Nil":
             # UMAP
-            umap_reducer = umap.UMAP(n_neighbors=umap_n_neighbors_value, min_dist=umap_min_dist_value) #TODO: n_neighbors, min_dist
+            umap_reducer = umap.UMAP(
+                n_neighbors=umap_n_neighbors_value, 
+                min_dist=umap_min_dist_value,
+                random_state=0
+            )
             umap_reducer.fit(df)
             umap_data = umap_reducer.transform(df)
             umap_labels = ["UMAP 1", "UMAP 2"]
@@ -1216,7 +1220,11 @@ def dynamic_env(df):
         # Option F: UMAP and K-Means
         elif dr_value == "UMAP" and clustering_value == "K-Means":
             # UMAP
-            umap_reducer = umap.UMAP(n_neighbors=umap_n_neighbors_value, min_dist=umap_min_dist_value) #TODO: n_neighbors, min_dist
+            umap_reducer = umap.UMAP(
+                n_neighbors=umap_n_neighbors_value, 
+                min_dist=umap_min_dist_value,
+                random_state=0
+            )
             umap_reducer.fit(df)
             umap_data = umap_reducer.transform(df)
             umap_labels = ["UMAP 1", "UMAP 2"]
@@ -1353,7 +1361,11 @@ def dynamic_env(df):
         # Option I: UMAP and DBSCAN
         elif dr_value == "UMAP" and clustering_value == "DBSCAN":
             # UMAP
-            umap_reducer = umap.UMAP(n_neighbors=umap_n_neighbors_value, min_dist=umap_min_dist_value) #TODO: n_neighbors, min_dist
+            umap_reducer = umap.UMAP(
+                n_neighbors=umap_n_neighbors_value, 
+                min_dist=umap_min_dist_value,
+                random_state=0
+            )
             umap_reducer.fit(df)
             umap_data = umap_reducer.transform(df)
             umap_labels = ["UMAP 1", "UMAP 2"]
@@ -1401,7 +1413,12 @@ def dynamic_env(df):
             
         # Option J: TSNE and no clustering algo
         elif dr_value == "t-SNE" and clustering_value == "Nil":
-            tsne = TSNE(perplexity=tsne_perplexity_value, early_exaggeration=tsne_early_exaggeration_value, learning_rate=tsne_learning_rate_value)
+            tsne = TSNE(
+                perplexity=tsne_perplexity_value, 
+                early_exaggeration=tsne_early_exaggeration_value, 
+                learning_rate=tsne_learning_rate_value,
+                random_state=0
+            )
             tsne_data = tsne.fit_transform(df)
             tsne_labels = ["t-SNE 1", "t-SNE 2"]
             tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
@@ -1440,7 +1457,12 @@ def dynamic_env(df):
 
         # Option K: t-SNE and K-Means
         elif dr_value == "t-SNE" and clustering_value == "K-Means":
-            tsne = TSNE(perplexity=tsne_perplexity_value, early_exaggeration=tsne_early_exaggeration_value, learning_rate=tsne_learning_rate_value)
+            tsne = TSNE(
+                perplexity=tsne_perplexity_value, 
+                early_exaggeration=tsne_early_exaggeration_value, 
+                learning_rate=tsne_learning_rate_value,
+                random_state=0
+            )
             tsne_data = tsne.fit_transform(df)
             tsne_labels = ["t-SNE 1", "t-SNE 2"]
             tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
@@ -1488,7 +1510,12 @@ def dynamic_env(df):
 
         # Option L: t-SNE and DBSCAN
         elif dr_value == "t-SNE" and clustering_value == "DBSCAN":
-            tsne = TSNE(perplexity=tsne_perplexity_value, early_exaggeration=tsne_early_exaggeration_value, learning_rate=tsne_learning_rate_value)
+            tsne = TSNE(
+                perplexity=tsne_perplexity_value, 
+                early_exaggeration=tsne_early_exaggeration_value, 
+                learning_rate=tsne_learning_rate_value,
+                random_state=0
+            )
             tsne_data = tsne.fit_transform(df)
             tsne_labels = ["t-SNE 1", "t-SNE 2"]
             tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
