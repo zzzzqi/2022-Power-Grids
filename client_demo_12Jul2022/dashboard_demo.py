@@ -304,6 +304,9 @@ def dynamic_env(df):
                 umap_df_x_axis_selection,
                 umap_df_y_axis_selection,
                 k_means_n_clusters_selection,
+                pn.pane.Markdown("#### UMAP parameters adjustment: "),
+                umap_n_neighbors,
+                umap_min_dist,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -334,6 +337,9 @@ def dynamic_env(df):
                 umap_df_y_axis_selection,
                 dbscan_max_distance_selection,
                 dbscan_n_samples_selection,
+                pn.pane.Markdown("#### UMAP parameters adjustment: "),
+                umap_n_neighbors,
+                umap_min_dist,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
