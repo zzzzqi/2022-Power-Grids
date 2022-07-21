@@ -97,17 +97,20 @@ def dynamic_env(df):
     pca_labels = ["PC 1", "PC 2"]
     pca_df = pd.DataFrame(pca_data, columns=pca_labels)
     pca_df_headers = list(pca_df.columns)
+
     # UMAP
-    umap_reducer = umap.UMAP()
-    umap_reducer.fit(df)
-    umap_data = umap_reducer.transform(df)
+    # umap_reducer = umap.UMAP() #TODO: n_neighbors, min_dist
+    # umap_reducer.fit(df)
+    # umap_data = umap_reducer.transform(df)
     umap_labels = ["UMAP 1", "UMAP 2"]
-    umap_df = pd.DataFrame(umap_data, columns=umap_labels)
+    # umap_df = pd.DataFrame(umap_data, columns=umap_labels)
+
     # t-SNE
-    tsne = TSNE(2)
-    tsne_data = tsne.fit_transform(df)
+    # tsne = TSNE()
+    # tsne_data = tsne.fit_transform(df)
     tsne_labels = ["t-SNE 1", "t-SNE 2"]
-    tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
+    # tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
+
     # fig, ax = plt.subplots(1)
     # sns.scatterplot(x='tsne_1', y='tsne_2', hue='label', data=tsne_result_df, ax=ax,s=120)
     # lim = (tsne_result.min()-5, tsne_result.max()+5)
@@ -171,6 +174,26 @@ def dynamic_env(df):
         options=umap_labels,
         value=umap_labels[1]
     )
+
+    # UMAP parameters
+    umap_n_neighbors = pn.widgets.IntSlider(
+        name="n_neighbors: ",
+        value=15, #default
+        start=0,
+        end=200,
+        step=5
+        # options=umap_labels
+    )
+    umap_min_dist = pn.widgets.FloatSlider(
+        name="min_dist: ",
+        value=0.1, #default
+        start=0,
+        end=0.99,
+        step=0.01
+        # options=umap_labels,
+        # value=umap_labels[1]
+    )
+    
     # K-Means clustering selection options
     k_means_n_clusters_selection = pn.widgets.IntSlider(
         value=5,
@@ -204,6 +227,28 @@ def dynamic_env(df):
         options=tsne_labels,
         value=tsne_labels[1]
     )
+    # t-SNE parameters TODO
+    tsne_perplexity = pn.widgets.FloatSlider(
+        name="perplexity: ",
+        value=30.0, #default
+        start=5,
+        end=50,
+        step=1
+    )
+    tsne_early_exaggeration = pn.widgets.FloatSlider(
+        name="early_exaggeration: ",
+        value=12.0, #default
+        start=2,
+        end=100,
+        step=1
+    )
+    tsne_learning_rate = pn.widgets.FloatSlider(
+        name="learning_rate: ",
+        value=200.0, #default
+        start=10.0,
+        end=1000.0,
+        step=10
+    )
 
     # Build the WidgetBox for plot configuration
     @pn.depends(dr_selection.param.value, clustering_selection.param.value)
@@ -229,6 +274,9 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 umap_df_x_axis_selection,
                 umap_df_y_axis_selection,
+                pn.pane.Markdown("#### UMAP parameters adjustment: "),
+                umap_n_neighbors,
+                umap_min_dist,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -294,6 +342,10 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 tsne_df_x_axis_selection,
                 tsne_df_y_axis_selection,
+                pn.pane.Markdown("#### t-SNE parameters adjustment: "),
+                tsne_perplexity,
+                tsne_early_exaggeration,
+                tsne_learning_rate,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -303,6 +355,10 @@ def dynamic_env(df):
                 tsne_df_x_axis_selection,
                 tsne_df_y_axis_selection,
                 k_means_n_clusters_selection,
+                pn.pane.Markdown("#### t-SNE parameters adjustment: "),
+                tsne_perplexity,
+                tsne_early_exaggeration,
+                tsne_learning_rate,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -313,6 +369,10 @@ def dynamic_env(df):
                 tsne_df_y_axis_selection,
                 dbscan_max_distance_selection,
                 dbscan_n_samples_selection,
+                pn.pane.Markdown("#### t-SNE parameters adjustment: "),
+                tsne_perplexity,
+                tsne_early_exaggeration,
+                tsne_learning_rate,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -926,6 +986,8 @@ def dynamic_env(df):
                 pca_df_x_axis_selection.param.value, pca_df_y_axis_selection.param.value,
                 umap_df_x_axis_selection.param.value, umap_df_y_axis_selection.param.value,
                 tsne_df_x_axis_selection.param.value, tsne_df_y_axis_selection.param.value,
+                umap_n_neighbors.param.value, umap_min_dist.param.value,
+                tsne_perplexity.param.value, tsne_early_exaggeration.param.value, tsne_learning_rate.param.value,
                 k_means_n_clusters_selection.param.value,
                 dbscan_max_distance_selection.param.value, dbscan_n_samples_selection.param.value,
                 basic_similar_events_x_value_selection.param.value,
@@ -937,6 +999,8 @@ def dynamic_env(df):
                          pca_x_value, pca_y_value,
                          umap_x_value, umap_y_value,
                          tsne_x_value, tsne_y_value,
+                         umap_n_neighbors_value, umap_min_dist_value,
+                         tsne_perplexity_value, tsne_early_exaggeration_value, tsne_learning_rate_value,
                          k_means_n_clusters,
                          dbscan_max_distance_value, dbscan_n_samples_value,
                          basic_similar_events_x_value, basic_similar_events_y_value,
@@ -1016,6 +1080,13 @@ def dynamic_env(df):
             )
         # Option C: UMAP and no clustering algo
         elif dr_value == "UMAP" and clustering_value == "Nil":
+            # UMAP
+            umap_reducer = umap.UMAP(n_neighbors=umap_n_neighbors_value, min_dist=umap_min_dist_value) #TODO: n_neighbors, min_dist
+            umap_reducer.fit(df)
+            umap_data = umap_reducer.transform(df)
+            umap_labels = ["UMAP 1", "UMAP 2"]
+            umap_df = pd.DataFrame(umap_data, columns=umap_labels)
+
             selected_df = pd.concat([metadata_df, umap_df], axis=1)
 
             selector = alt.selection_single(name='event_id')
@@ -1138,6 +1209,13 @@ def dynamic_env(df):
             )
         # Option F: UMAP and K-Means
         elif dr_value == "UMAP" and clustering_value == "K-Means":
+            # UMAP
+            umap_reducer = umap.UMAP(n_neighbors=umap_n_neighbors_value, min_dist=umap_min_dist_value) #TODO: n_neighbors, min_dist
+            umap_reducer.fit(df)
+            umap_data = umap_reducer.transform(df)
+            umap_labels = ["UMAP 1", "UMAP 2"]
+            umap_df = pd.DataFrame(umap_data, columns=umap_labels)
+
             umap_kmeans = KMeans(n_clusters=k_means_n_clusters)
             y_pred = umap_kmeans.fit_predict(umap_df)
 
@@ -1268,6 +1346,12 @@ def dynamic_env(df):
             )
         # Option I: UMAP and DBSCAN
         elif dr_value == "UMAP" and clustering_value == "DBSCAN":
+            # UMAP
+            umap_reducer = umap.UMAP(n_neighbors=umap_n_neighbors_value, min_dist=umap_min_dist_value) #TODO: n_neighbors, min_dist
+            umap_reducer.fit(df)
+            umap_data = umap_reducer.transform(df)
+            umap_labels = ["UMAP 1", "UMAP 2"]
+            umap_df = pd.DataFrame(umap_data, columns=umap_labels)
             umap_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
             y_pred = umap_dbscan.fit_predict(umap_df)
 
@@ -1311,6 +1395,11 @@ def dynamic_env(df):
             
         # Option J: TSNE and no clustering algo
         elif dr_value == "t-SNE" and clustering_value == "Nil":
+            tsne = TSNE(perplexity=tsne_perplexity_value, early_exaggeration=tsne_early_exaggeration_value, learning_rate=tsne_learning_rate_value)
+            tsne_data = tsne.fit_transform(df)
+            tsne_labels = ["t-SNE 1", "t-SNE 2"]
+            tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
+
             selected_df = pd.concat([metadata_df, tsne_df], axis=1)
             selector = alt.selection_single(name='event_id')
             plot = alt.Chart(selected_df).mark_circle(size=80).encode(
@@ -1345,6 +1434,11 @@ def dynamic_env(df):
 
         # Option K: t-SNE and K-Means
         elif dr_value == "t-SNE" and clustering_value == "K-Means":
+            tsne = TSNE(perplexity=tsne_perplexity_value, early_exaggeration=tsne_early_exaggeration_value, learning_rate=tsne_learning_rate_value)
+            tsne_data = tsne.fit_transform(df)
+            tsne_labels = ["t-SNE 1", "t-SNE 2"]
+            tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
+            
             tsne_kmeans = KMeans(n_clusters=k_means_n_clusters)
             y_pred = tsne_kmeans.fit_predict(tsne_df)
 
@@ -1388,6 +1482,11 @@ def dynamic_env(df):
 
         # Option L: t-SNE and DBSCAN
         elif dr_value == "t-SNE" and clustering_value == "DBSCAN":
+            tsne = TSNE(perplexity=tsne_perplexity_value, early_exaggeration=tsne_early_exaggeration_value, learning_rate=tsne_learning_rate_value)
+            tsne_data = tsne.fit_transform(df)
+            tsne_labels = ["t-SNE 1", "t-SNE 2"]
+            tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
+            
             tsne_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
             y_pred = tsne_dbscan.fit_predict(tsne_df)
 
