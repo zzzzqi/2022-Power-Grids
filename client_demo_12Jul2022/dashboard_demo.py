@@ -11,7 +11,7 @@ from bokeh.resources import INLINE
 from bokeh.models.widgets.tables import NumberFormatter, BooleanFormatter
 
 from sklearn import decomposition
-from sklearn.cluster import KMeans, DBSCAN, k_means
+from sklearn.cluster import KMeans, DBSCAN, k_means, OPTICS
 import umap.umap_ as umap
 from sklearn.manifold import TSNE
 
@@ -99,28 +99,10 @@ def dynamic_env(df):
     pca_df_headers = list(pca_df.columns)
 
     # UMAP
-    # umap_reducer = umap.UMAP() #TODO: n_neighbors, min_dist
-    # umap_reducer.fit(df)
-    # umap_data = umap_reducer.transform(df)
     umap_labels = ["UMAP 1", "UMAP 2"]
-    # umap_df = pd.DataFrame(umap_data, columns=umap_labels)
 
     # t-SNE
-    # tsne = TSNE()
-    # tsne_data = tsne.fit_transform(df)
     tsne_labels = ["t-SNE 1", "t-SNE 2"]
-    # tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
-
-    # fig, ax = plt.subplots(1)
-    # sns.scatterplot(x='tsne_1', y='tsne_2', hue='label', data=tsne_result_df, ax=ax,s=120)
-    # lim = (tsne_result.min()-5, tsne_result.max()+5)
-    # ax.set_xlim(lim)
-    # ax.set_ylim(lim)
-    # ax.set_aspect('equal')
-    # ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
-
-    # print(tsne_result.shape)
-
 
     ## ========================================================
     ## Column 1a: The algo-selection column
@@ -130,7 +112,7 @@ def dynamic_env(df):
     )
     # Build the selection dropdown for Clustering algos
     clustering_selection = pn.widgets.Select(
-        options=["Nil", "K-Means", "DBSCAN"]
+        options=["Nil", "K-Means", "DBSCAN", "OPTICS"]
     )
     # Build the WidgetBox for algos selection
     algo_column = pn.WidgetBox(
@@ -164,6 +146,20 @@ def dynamic_env(df):
         options=pca_df_headers,
         value=pca_df_headers[1]
     )
+    # PCA parameters
+    pca_whiten = pn.widgets.Select(
+        name="whiten: ",
+        options={'False': False, 'True': True}
+    )
+    pca_svd_solver = pn.widgets.Select(
+        name="svd_solver: ",
+        options={
+            'auto': 'auto',
+            'full': 'full',
+            'arpack': 'arpack',
+            'randomized': 'randomized'}
+    )
+
     # UMAP selection options
     umap_df_x_axis_selection = pn.widgets.Select(
         name="X-axis: ",
@@ -193,7 +189,7 @@ def dynamic_env(df):
         # options=umap_labels,
         # value=umap_labels[1]
     )
-    
+
     # K-Means clustering selection options
     k_means_n_clusters_selection = pn.widgets.IntSlider(
         value=5,
@@ -217,6 +213,23 @@ def dynamic_env(df):
         step=5,
         name="Number of samples in a neighbourhood"
     )
+
+    #OPTICS selection options
+    optics_max_eps = pn.widgets.FloatSlider(
+        value=0,
+        start=1.0,
+        end=10.0,
+        step=0.1,
+        name="Max distance between samples"
+    )
+    optics_min_samples = pn.widgets.IntSlider(
+        value=5,
+        start=1,
+        end=50,
+        step=1,
+        name="Number of samples in a neighbourhood"
+    )
+
     # t-SNE selection options
     tsne_df_x_axis_selection = pn.widgets.Select(
         name="X-axis: ",
@@ -266,6 +279,9 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 pca_df_x_axis_selection,
                 pca_df_y_axis_selection,
+                pn.pane.Markdown("#### PCA parameters adjustment: "),
+                pca_whiten,
+                pca_svd_solver,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -295,6 +311,9 @@ def dynamic_env(df):
                 pca_df_x_axis_selection,
                 pca_df_y_axis_selection,
                 k_means_n_clusters_selection,
+                pn.pane.Markdown("#### PCA parameters adjustment: "),
+                pca_whiten,
+                pca_svd_solver,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -327,6 +346,9 @@ def dynamic_env(df):
                 pca_df_y_axis_selection,
                 dbscan_max_distance_selection,
                 dbscan_n_samples_selection,
+                pn.pane.Markdown("#### PCA parameters adjustment: "),
+                pca_whiten,
+                pca_svd_solver,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -379,6 +401,56 @@ def dynamic_env(df):
                 tsne_perplexity,
                 tsne_early_exaggeration,
                 tsne_learning_rate,
+                pn.pane.Markdown(""),
+                width=widgetbox_width
+            )
+        elif dr_value == "Nil" and clustering_value == "OPTICS":
+            return pn.WidgetBox(
+                pn.pane.Markdown("#### Data-exploration pane options: "),
+                basic_df_x_axis_selection,
+                basic_df_y_axis_selection,
+                optics_max_eps,
+                optics_min_samples,
+                pn.pane.Markdown(""),
+                width=widgetbox_width
+            )
+        elif dr_value == "t-SNE" and clustering_value == "OPTICS":
+            return pn.WidgetBox(
+                pn.pane.Markdown("#### Data-exploration pane options: "),
+                tsne_df_x_axis_selection,
+                tsne_df_y_axis_selection,
+                optics_max_eps,
+                optics_min_samples,
+                pn.pane.Markdown("#### t-SNE parameters adjustment: "),
+                tsne_perplexity,
+                tsne_early_exaggeration,
+                tsne_learning_rate,
+                pn.pane.Markdown(""),
+                width=widgetbox_width
+            )
+        elif dr_value == "PCA" and clustering_value == "OPTICS":
+            return pn.WidgetBox(
+                pn.pane.Markdown("#### Data-exploration pane options: "),
+                pca_df_x_axis_selection,
+                pca_df_y_axis_selection,
+                optics_max_eps,
+                optics_min_samples,
+                pn.pane.Markdown("#### PCA parameters adjustment: "),
+                pca_whiten,
+                pca_svd_solver,
+                pn.pane.Markdown(""),
+                width=widgetbox_width
+            )
+        elif dr_value == "UMAP" and clustering_value == "OPTICS":
+            return pn.WidgetBox(
+                pn.pane.Markdown("#### Data-exploration pane options: "),
+                umap_df_x_axis_selection,
+                umap_df_y_axis_selection,
+                optics_max_eps,
+                optics_min_samples,
+                pn.pane.Markdown("#### UMAP parameters adjustment: "),
+                umap_n_neighbors,
+                umap_min_dist,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -990,12 +1062,14 @@ def dynamic_env(df):
     @pn.depends(dr_selection.param.value, clustering_selection.param.value,
                 basic_df_x_axis_selection.param.value, basic_df_y_axis_selection.param.value,
                 pca_df_x_axis_selection.param.value, pca_df_y_axis_selection.param.value,
+                pca_whiten.param.value, pca_svd_solver.param.value,
                 umap_df_x_axis_selection.param.value, umap_df_y_axis_selection.param.value,
                 tsne_df_x_axis_selection.param.value, tsne_df_y_axis_selection.param.value,
                 umap_n_neighbors.param.value, umap_min_dist.param.value,
                 tsne_perplexity.param.value, tsne_early_exaggeration.param.value, tsne_learning_rate.param.value,
                 k_means_n_clusters_selection.param.value,
                 dbscan_max_distance_selection.param.value, dbscan_n_samples_selection.param.value,
+                optics_min_samples.param.value, optics_max_eps.param.value,
                 basic_similar_events_x_value_selection.param.value,
                 basic_similar_events_y_value_selection.param.value,
                 dr_similar_events_x_value_selection.param.value,
@@ -1003,12 +1077,14 @@ def dynamic_env(df):
     def data_exploration(dr_value, clustering_value,
                          basic_x_value, basic_y_value,
                          pca_x_value, pca_y_value,
+                         pca_whiten_value, pca_svd_solver_value,
                          umap_x_value, umap_y_value,
                          tsne_x_value, tsne_y_value,
                          umap_n_neighbors_value, umap_min_dist_value,
                          tsne_perplexity_value, tsne_early_exaggeration_value, tsne_learning_rate_value,
                          k_means_n_clusters,
                          dbscan_max_distance_value, dbscan_n_samples_value,
+                         optics_min_samples_value, optics_max_eps_value,
                          basic_similar_events_x_value, basic_similar_events_y_value,
                          dr_similar_events_x_value, dr_similar_events_y_value):
         # Option A: No dimensionality reduction nor clustering algos
@@ -1052,6 +1128,15 @@ def dynamic_env(df):
             )
         # Option B: PCA and no clustering algo
         elif dr_value == "PCA" and clustering_value == "Nil":
+            pca = decomposition.PCA(
+                n_components=2,
+                whiten=pca_whiten_value,
+                svd_solver=pca_svd_solver_value)
+            pca.fit(df.copy())
+            pca_data = pca.transform(df.copy())
+            pca_labels = ["PC 1", "PC 2"]
+            pca_df = pd.DataFrame(pca_data, columns=pca_labels)
+
             selected_df = pd.concat([metadata_df, pca_df], axis=1)
 
             selector = alt.selection_single(name='event_id')
@@ -1177,6 +1262,15 @@ def dynamic_env(df):
             )
         # Option E: PCA and K-Means
         elif dr_value == "PCA" and clustering_value == "K-Means":
+            pca = decomposition.PCA(
+                n_components=2,
+                whiten=pca_whiten_value,
+                svd_solver=pca_svd_solver_value)
+            pca.fit(df.copy())
+            pca_data = pca.transform(df.copy())
+            pca_labels = ["PC 1", "PC 2"]
+            pca_df = pd.DataFrame(pca_data, columns=pca_labels)
+
             pca_kmeans = KMeans(n_clusters=k_means_n_clusters)
             y_pred = pca_kmeans.fit_predict(pca_df)
 
@@ -1318,6 +1412,15 @@ def dynamic_env(df):
             )
         # Option H: PCA and DBSCAN
         elif dr_value == "PCA" and clustering_value == "DBSCAN":
+            pca = decomposition.PCA(
+                n_components=2,
+                whiten=pca_whiten_value,
+                svd_solver=pca_svd_solver_value)
+            pca.fit(df.copy())
+            pca_data = pca.transform(df.copy())
+            pca_labels = ["PC 1", "PC 2"]
+            pca_df = pd.DataFrame(pca_data, columns=pca_labels)
+
             pca_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
             y_pred = pca_dbscan.fit_predict(pca_df)
 
@@ -1561,7 +1664,217 @@ def dynamic_env(df):
                 ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
             )
 
+        # Option M: No dimensionality reduction algo and OPTICS clustering algo
+        elif dr_value == "Nil" and clustering_value == "OPTICS":
+            basic_optics = OPTICS(
+                min_samples=optics_min_samples_value,
+                max_eps=optics_max_eps_value)
+            if basic_x_value == basic_y_value:
+                selected_df = basic_df[[basic_x_value]]
+            else:
+                selected_df = basic_df[[basic_x_value, basic_y_value]]
+            y_pred = basic_optics.fit_predict(selected_df)
 
+            y_pred_df = pd.DataFrame(data={"cluster": y_pred})
+            selected_df = pd.concat([metadata_df, selected_df, y_pred_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
+                x=alt.X(basic_x_value, scale=alt.Scale(domain=[-0.1, 1.1])),
+                y=alt.Y(basic_y_value, scale=alt.Scale(domain=[-0.1, 1.1])),
+                color=alt.condition(
+                    selector,
+                    alt.Color('cluster:N', scale=alt.Scale(scheme='set1'), legend=None),
+                    alt.value('lightgray')),
+                tooltip=["event_id", basic_x_value, basic_y_value, "cluster"]
+            ).properties(
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return build_event_page(
+                        selection,
+                        selected_df,
+                        basic_x_value,
+                        basic_y_value,
+                        clustering_value,
+                        None,
+                        None
+                    )
+
+            # Add overlay for centroids
+            return pn.Tabs(
+                ("Data-exploration pane", vega_pane),
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
+            )
+
+        # Option N: t-SNE and OPTICS
+        elif dr_value == "t-SNE" and clustering_value == "OPTICS":
+            tsne = TSNE(
+                perplexity=tsne_perplexity_value, 
+                early_exaggeration=tsne_early_exaggeration_value, 
+                learning_rate=tsne_learning_rate_value,
+                random_state=0
+            )
+            tsne_data = tsne.fit_transform(df)
+            tsne_labels = ["t-SNE 1", "t-SNE 2"]
+            tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
+            
+            tsne_optics = OPTICS(
+                min_samples=optics_min_samples_value,
+                max_eps=optics_max_eps_value)
+            y_pred = tsne_optics.fit_predict(tsne_df)
+
+            y_pred_df = pd.DataFrame(data={"cluster": y_pred})
+            selected_df = pd.concat([metadata_df, tsne_df, y_pred_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
+                x=tsne_x_value,
+                y=tsne_y_value,
+                color=alt.condition(
+                    selector,
+                    alt.Color('cluster:N', scale=alt.Scale(scheme='set1'), legend=None),
+                    alt.value('lightgray')),
+                tooltip=["event_id", tsne_x_value, tsne_y_value, "cluster"]
+            ).properties(
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return build_event_page(
+                        selection,
+                        selected_df,
+                        tsne_x_value,
+                        tsne_y_value,
+                        clustering_value,
+                        None,
+                        None
+                    )
+
+            # Add overlay for centroids
+            return pn.Tabs(
+                ("Data-exploration pane", vega_pane),
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
+            )
+        # Option O: PCA and OPTICS
+        elif dr_value == "PCA" and clustering_value == "OPTICS":
+            pca = decomposition.PCA(
+                n_components=2,
+                whiten=pca_whiten_value,
+                svd_solver=pca_svd_solver_value)
+            pca.fit(df.copy())
+            pca_data = pca.transform(df.copy())
+            pca_labels = ["PC 1", "PC 2"]
+            pca_df = pd.DataFrame(pca_data, columns=pca_labels)
+
+            pca_optics = OPTICS(
+                min_samples=optics_min_samples_value,
+                max_eps=optics_max_eps_value)
+            y_pred = pca_optics.fit_predict(pca_df)
+
+            y_pred_df = pd.DataFrame(data={"cluster": y_pred})
+            selected_df = pd.concat([metadata_df, pca_df, y_pred_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
+                x=pca_x_value,
+                y=pca_y_value,
+                color=alt.condition(
+                    selector,
+                    alt.Color('cluster:N', scale=alt.Scale(scheme='set1'), legend=None),
+                    alt.value('lightgray')),
+                tooltip=["event_id", pca_x_value, pca_y_value, "cluster"]
+            ).properties(
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return build_event_page(
+                        selection,
+                        selected_df,
+                        pca_x_value,
+                        pca_y_value,
+                        clustering_value,
+                        None,
+                        None
+                    )
+
+            # Add overlay for centroids
+            return pn.Tabs(
+                ("Data-exploration pane", vega_pane),
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
+            )
+
+        # Option P: UMAP and OPTICS
+        elif dr_value == "UMAP" and clustering_value == "OPTICS":
+            # UMAP
+            umap_reducer = umap.UMAP(
+                n_neighbors=umap_n_neighbors_value, 
+                min_dist=umap_min_dist_value,
+                random_state=0
+            )
+            umap_reducer.fit(df)
+            umap_data = umap_reducer.transform(df)
+            umap_labels = ["UMAP 1", "UMAP 2"]
+            umap_df = pd.DataFrame(umap_data, columns=umap_labels)
+            umap_optics = OPTICS(
+                min_samples=optics_min_samples_value,
+                max_eps=optics_max_eps_value)
+            y_pred = umap_optics.fit_predict(umap_df)
+
+            y_pred_df = pd.DataFrame(data={"cluster": y_pred})
+            selected_df = pd.concat([metadata_df, umap_df, y_pred_df], axis=1)
+
+            selector = alt.selection_single(name='event_id')
+            plot = alt.Chart(selected_df).mark_circle(size=80).encode(
+                x=umap_x_value,
+                y=umap_y_value,
+                color=alt.condition(
+                    selector,
+                    alt.Color('cluster:N', scale=alt.Scale(scheme='set1'), legend=None),
+                    alt.value('lightgray')),
+                tooltip=["event_id", umap_x_value, umap_y_value, "cluster"]
+            ).properties(
+                height=data_exploration_pane_height,
+                width=data_exploration_pane_width
+            ).interactive().add_selection(selector)
+            vega_pane = pn.pane.Vega(plot, debounce=10)
+
+            def get_event(selection):
+                if not selection:
+                    return '## No selection'
+                else:
+                    return build_event_page(
+                        selection,
+                        selected_df,
+                        umap_x_value,
+                        umap_y_value,
+                        clustering_value,
+                        None,
+                        None
+                    )
+
+            # Add overlay for centroids
+            return pn.Tabs(
+                ("Data-exploration pane", vega_pane),
+                ("Power signal event", pn.bind(get_event, vega_pane.selection.param.event_id))
+            )
 
 
     ## ========================================================
