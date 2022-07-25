@@ -200,17 +200,17 @@ def dynamic_env(df):
     )
     # DBSCAN selection options
     dbscan_max_distance_selection = pn.widgets.FloatSlider(
-        value=0.5,
+        value=0,
         start=1.0,
         end=10.0,
-        step=0.5,
+        step=0.1,
         name="Max distance between samples"
     )
     dbscan_n_samples_selection = pn.widgets.IntSlider(
-        value=10,
-        start=5,
+        value=5,
+        start=1,
         end=50,
-        step=5,
+        step=1,
         name="Number of samples in a neighbourhood"
     )
 
@@ -301,6 +301,7 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 basic_df_x_axis_selection,
                 basic_df_y_axis_selection,
+                pn.pane.Markdown("#### K-Means cluster number adjustment: "),
                 k_means_n_clusters_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
@@ -310,10 +311,11 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 pca_df_x_axis_selection,
                 pca_df_y_axis_selection,
-                k_means_n_clusters_selection,
                 pn.pane.Markdown("#### PCA parameters adjustment: "),
                 pca_whiten,
                 pca_svd_solver,
+                pn.pane.Markdown("#### K-Means cluster number adjustment: "),
+                k_means_n_clusters_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -322,10 +324,11 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 umap_df_x_axis_selection,
                 umap_df_y_axis_selection,
-                k_means_n_clusters_selection,
                 pn.pane.Markdown("#### UMAP parameters adjustment: "),
                 umap_n_neighbors,
                 umap_min_dist,
+                pn.pane.Markdown("#### K-Means cluster number adjustment: "),
+                k_means_n_clusters_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -334,6 +337,7 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 basic_df_x_axis_selection,
                 basic_df_y_axis_selection,
+                pn.pane.Markdown("#### DBSCAN parameters adjustment: "),
                 dbscan_max_distance_selection,
                 dbscan_n_samples_selection,
                 pn.pane.Markdown(""),
@@ -344,11 +348,12 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 pca_df_x_axis_selection,
                 pca_df_y_axis_selection,
-                dbscan_max_distance_selection,
-                dbscan_n_samples_selection,
                 pn.pane.Markdown("#### PCA parameters adjustment: "),
                 pca_whiten,
                 pca_svd_solver,
+                pn.pane.Markdown("#### DBSCAN parameters adjustment: "),
+                dbscan_max_distance_selection,
+                dbscan_n_samples_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -357,11 +362,12 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 umap_df_x_axis_selection,
                 umap_df_y_axis_selection,
-                dbscan_max_distance_selection,
-                dbscan_n_samples_selection,
                 pn.pane.Markdown("#### UMAP parameters adjustment: "),
                 umap_n_neighbors,
                 umap_min_dist,
+                pn.pane.Markdown("#### DBSCAN parameters adjustment: "),
+                dbscan_max_distance_selection,
+                dbscan_n_samples_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -382,11 +388,12 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 tsne_df_x_axis_selection,
                 tsne_df_y_axis_selection,
-                k_means_n_clusters_selection,
                 pn.pane.Markdown("#### t-SNE parameters adjustment: "),
                 tsne_perplexity,
                 tsne_early_exaggeration,
                 tsne_learning_rate,
+                pn.pane.Markdown("#### K-Means cluster number adjustment: "),
+                k_means_n_clusters_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -395,12 +402,13 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 tsne_df_x_axis_selection,
                 tsne_df_y_axis_selection,
-                dbscan_max_distance_selection,
-                dbscan_n_samples_selection,
                 pn.pane.Markdown("#### t-SNE parameters adjustment: "),
                 tsne_perplexity,
                 tsne_early_exaggeration,
                 tsne_learning_rate,
+                pn.pane.Markdown("#### DBSCAN parameters adjustment: "),
+                dbscan_max_distance_selection,
+                dbscan_n_samples_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -409,6 +417,7 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 basic_df_x_axis_selection,
                 basic_df_y_axis_selection,
+                pn.pane.Markdown("#### OPTICS parameters adjustment: "),
                 optics_max_eps,
                 optics_min_samples,
                 pn.pane.Markdown(""),
@@ -419,12 +428,13 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 tsne_df_x_axis_selection,
                 tsne_df_y_axis_selection,
-                optics_max_eps,
-                optics_min_samples,
                 pn.pane.Markdown("#### t-SNE parameters adjustment: "),
                 tsne_perplexity,
                 tsne_early_exaggeration,
                 tsne_learning_rate,
+                pn.pane.Markdown("#### OPTICS parameters adjustment: "),
+                optics_max_eps,
+                optics_min_samples,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -433,11 +443,12 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 pca_df_x_axis_selection,
                 pca_df_y_axis_selection,
-                optics_max_eps,
-                optics_min_samples,
                 pn.pane.Markdown("#### PCA parameters adjustment: "),
                 pca_whiten,
                 pca_svd_solver,
+                pn.pane.Markdown("#### OPTICS parameters adjustment: "),
+                optics_max_eps,
+                optics_min_samples,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
@@ -446,11 +457,12 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 umap_df_x_axis_selection,
                 umap_df_y_axis_selection,
-                optics_max_eps,
-                optics_min_samples,
                 pn.pane.Markdown("#### UMAP parameters adjustment: "),
                 umap_n_neighbors,
                 umap_min_dist,
+                pn.pane.Markdown("#### OPTICS parameters adjustment: "),
+                optics_max_eps,
+                optics_min_samples,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
             )
