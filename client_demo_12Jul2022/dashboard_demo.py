@@ -222,7 +222,7 @@ def dynamic_env(df):
     )
     # DBSCAN parameters
     dbscan_max_distance_selection = pn.widgets.FloatSlider(
-        value=0.1,
+        value=0.5,
         start=0.1,
         end=10.0,
         step=0.1,
@@ -237,7 +237,7 @@ def dynamic_env(df):
     )
     # OPTICS parameters
     optics_max_eps = pn.widgets.FloatSlider(
-        value=0.1,
+        value=0.5,
         start=0.1,
         end=10.0,
         step=0.1,
@@ -1583,7 +1583,7 @@ def dynamic_env(df):
                 ("Similar events", pn.bind(get_similar_events, vega_pane.selection.param.event_id))
             )
 
-        # Option H: PCA and DBSCAN - bug
+        # Option H: PCA and DBSCAN
         elif dr_value == "PCA" and clustering_value == "DBSCAN":
             pca = decomposition.PCA(
                 n_components=2,
@@ -1645,7 +1645,6 @@ def dynamic_env(df):
                     )
 
             return pn.Tabs(
-                ("test", selected_df),
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
                 ("Similar events", pn.bind(get_similar_events, vega_pane.selection.param.event_id))
