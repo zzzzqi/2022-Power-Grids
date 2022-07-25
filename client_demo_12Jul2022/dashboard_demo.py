@@ -1902,7 +1902,8 @@ def dynamic_env(df):
         elif dr_value == "Nil" and clustering_value == "OPTICS":
             basic_optics = OPTICS(
                 min_samples=optics_min_samples_value,
-                max_eps=optics_max_eps_value)
+                max_eps=optics_max_eps_value
+            )
             if basic_x_value == basic_y_value:
                 selected_df = basic_df[[basic_x_value]]
             else:
