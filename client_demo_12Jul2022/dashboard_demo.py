@@ -12,9 +12,9 @@ from bokeh.resources import INLINE
 from bokeh.models.widgets.tables import NumberFormatter, BooleanFormatter
 
 from sklearn import decomposition
+from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans, DBSCAN, k_means, OPTICS
 import umap.umap_ as umap
-from sklearn.manifold import TSNE
 
 # Enable Bokeh and Panel
 hv.extension('bokeh')
@@ -92,24 +92,9 @@ def dynamic_env(df):
     ## ========================================================
     ## Dimensionality Reduction algos
     # PCA
-    pca = decomposition.PCA(n_components=2)
-    pca.fit(df)
-    pca_data = pca.transform(df)
     pca_labels = ["PC 1", "PC 2"]
-    pca_df = pd.DataFrame(pca_data, columns=pca_labels)
-    pca_df_headers = list(pca_df.columns)
-
-    # delete
-    # UMAP
-    umap_reducer = umap.UMAP()
-    umap_reducer.fit(df)
-    umap_data = umap_reducer.transform(df)
-    umap_labels = ["UMAP 1", "UMAP 2"]
-    umap_df = pd.DataFrame(umap_data, columns=umap_labels)
-
     # UMAP
     umap_labels = ["UMAP 1", "UMAP 2"]
-
     # t-SNE
     tsne_labels = ["t-SNE 1", "t-SNE 2"]
 
@@ -148,13 +133,34 @@ def dynamic_env(df):
     # PCA selection options
     pca_df_x_axis_selection = pn.widgets.Select(
         name="X-axis: ",
-        options=pca_df_headers
+        options=pca_labels
     )
     pca_df_y_axis_selection = pn.widgets.Select(
         name="Y-axis: ",
-        options=pca_df_headers,
-        value=pca_df_headers[1]
+        options=pca_labels,
+        value=pca_labels[1]
     )
+    # UMAP selection options
+    umap_df_x_axis_selection = pn.widgets.Select(
+        name="X-axis: ",
+        options=umap_labels
+    )
+    umap_df_y_axis_selection = pn.widgets.Select(
+        name="Y-axis: ",
+        options=umap_labels,
+        value=umap_labels[1]
+    )
+    # t-SNE selection options
+    tsne_df_x_axis_selection = pn.widgets.Select(
+        name="X-axis: ",
+        options=tsne_labels
+    )
+    tsne_df_y_axis_selection = pn.widgets.Select(
+        name="Y-axis: ",
+        options=tsne_labels,
+        value=tsne_labels[1]
+    )
+
     # PCA parameters
     pca_whiten = pn.widgets.Select(
         name="whiten: ",
@@ -166,20 +172,9 @@ def dynamic_env(df):
             'auto': 'auto',
             'full': 'full',
             'arpack': 'arpack',
-            'randomized': 'randomized'}
+            'randomized': 'randomized'
+        }
     )
-
-    # UMAP selection options
-    umap_df_x_axis_selection = pn.widgets.Select(
-        name="X-axis: ",
-        options=umap_labels
-    )
-    umap_df_y_axis_selection = pn.widgets.Select(
-        name="Y-axis: ",
-        options=umap_labels,
-        value=umap_labels[1]
-    )
-
     # UMAP parameters
     umap_n_neighbors = pn.widgets.IntSlider(
         name="n_neighbors: ",
@@ -187,7 +182,6 @@ def dynamic_env(df):
         start=0,
         end=200,
         step=5
-        # options=umap_labels
     )
     umap_min_dist = pn.widgets.FloatSlider(
         name="min_dist: ",
@@ -195,61 +189,8 @@ def dynamic_env(df):
         start=0,
         end=0.99,
         step=0.01
-        # options=umap_labels,
-        # value=umap_labels[1]
     )
-
-    # K-Means clustering selection options
-    k_means_n_clusters_selection = pn.widgets.IntSlider(
-        value=5,
-        start=1,
-        end=10,
-        step=1,
-        name="Number of clusters"
-    )
-    # DBSCAN selection options
-    dbscan_max_distance_selection = pn.widgets.FloatSlider(
-        value=1.0,
-        start=1.0,
-        end=10.0,
-        step=0.1,
-        name="Max distance between samples"
-    )
-    dbscan_n_samples_selection = pn.widgets.IntSlider(
-        value=10,
-        start=5,
-        end=50,
-        step=5,
-        name="Number of samples in a neighbourhood"
-    )
-
-    # OPTICS selection options
-    optics_max_eps = pn.widgets.FloatSlider(
-        value=1.0,
-        start=1.0,
-        end=10.0,
-        step=0.1,
-        name="Max distance between samples"
-    )
-    optics_min_samples = pn.widgets.IntSlider(
-        value=10,
-        start=5,
-        end=50,
-        step=5,
-        name="Number of samples in a neighbourhood"
-    )
-
-    # t-SNE selection options
-    tsne_df_x_axis_selection = pn.widgets.Select(
-        name="X-axis: ",
-        options=tsne_labels
-    )
-    tsne_df_y_axis_selection = pn.widgets.Select(
-        name="Y-axis: ",
-        options=tsne_labels,
-        value=tsne_labels[1]
-    )
-    # t-SNE parameters TODO
+    # t-SNE parameters
     tsne_perplexity = pn.widgets.FloatSlider(
         name="perplexity: ",
         value=30.0,  # default
@@ -271,6 +212,44 @@ def dynamic_env(df):
         end=1000.0,
         step=10
     )
+    # K-Means parameters
+    k_means_n_clusters_selection = pn.widgets.IntSlider(
+        value=5,
+        start=1,
+        end=10,
+        step=1,
+        name="Number of clusters"
+    )
+    # DBSCAN parameters
+    dbscan_max_distance_selection = pn.widgets.FloatSlider(
+        value=0.1,
+        start=0.1,
+        end=10.0,
+        step=0.1,
+        name="Max distance between samples"
+    )
+    dbscan_n_samples_selection = pn.widgets.IntSlider(
+        value=10,
+        start=5,
+        end=50,
+        step=5,
+        name="Number of samples in a neighbourhood"
+    )
+    # OPTICS parameters
+    optics_max_eps = pn.widgets.FloatSlider(
+        value=0.1,
+        start=0.1,
+        end=10.0,
+        step=0.1,
+        name="Max distance between samples"
+    )
+    optics_min_samples = pn.widgets.IntSlider(
+        value=10,
+        start=5,
+        end=50,
+        step=5,
+        name="Number of samples in a neighbourhood"
+    )
 
     # Build the WidgetBox for plot configuration
     @pn.depends(dr_selection.param.value, clustering_selection.param.value)
@@ -288,7 +267,7 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 pca_df_x_axis_selection,
                 pca_df_y_axis_selection,
-                pn.pane.Markdown("#### PCA parameters adjustment: "),
+                pn.pane.Markdown("#### PCA parameters: "),
                 pca_whiten,
                 pca_svd_solver,
                 pn.pane.Markdown(""),
@@ -299,7 +278,7 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 umap_df_x_axis_selection,
                 umap_df_y_axis_selection,
-                pn.pane.Markdown("#### UMAP parameters adjustment: "),
+                pn.pane.Markdown("#### UMAP parameters: "),
                 umap_n_neighbors,
                 umap_min_dist,
                 pn.pane.Markdown(""),
@@ -310,7 +289,7 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 basic_df_x_axis_selection,
                 basic_df_y_axis_selection,
-                pn.pane.Markdown("#### K-Means parameters adjustment: "),
+                pn.pane.Markdown("#### K-Means parameters: "),
                 k_means_n_clusters_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
@@ -320,10 +299,10 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 pca_df_x_axis_selection,
                 pca_df_y_axis_selection,
-                pn.pane.Markdown("#### PCA parameters adjustment: "),
+                pn.pane.Markdown("#### PCA parameters: "),
                 pca_whiten,
                 pca_svd_solver,
-                pn.pane.Markdown("#### K-Means parameters adjustment: "),
+                pn.pane.Markdown("#### K-Means parameters: "),
                 k_means_n_clusters_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
@@ -333,10 +312,10 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 umap_df_x_axis_selection,
                 umap_df_y_axis_selection,
-                pn.pane.Markdown("#### UMAP parameters adjustment: "),
+                pn.pane.Markdown("#### UMAP parameters: "),
                 umap_n_neighbors,
                 umap_min_dist,
-                pn.pane.Markdown("#### K-Means parameters adjustment: "),
+                pn.pane.Markdown("#### K-Means parameters: "),
                 k_means_n_clusters_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
@@ -346,7 +325,7 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 basic_df_x_axis_selection,
                 basic_df_y_axis_selection,
-                pn.pane.Markdown("#### DBSCAN parameters adjustment: "),
+                pn.pane.Markdown("#### DBSCAN parameters: "),
                 dbscan_max_distance_selection,
                 dbscan_n_samples_selection,
                 pn.pane.Markdown(""),
@@ -357,10 +336,10 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 pca_df_x_axis_selection,
                 pca_df_y_axis_selection,
-                pn.pane.Markdown("#### PCA parameters adjustment: "),
+                pn.pane.Markdown("#### PCA parameters: "),
                 pca_whiten,
                 pca_svd_solver,
-                pn.pane.Markdown("#### DBSCAN parameters adjustment: "),
+                pn.pane.Markdown("#### DBSCAN parameters: "),
                 dbscan_max_distance_selection,
                 dbscan_n_samples_selection,
                 pn.pane.Markdown(""),
@@ -371,10 +350,10 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 umap_df_x_axis_selection,
                 umap_df_y_axis_selection,
-                pn.pane.Markdown("#### UMAP parameters adjustment: "),
+                pn.pane.Markdown("#### UMAP parameters: "),
                 umap_n_neighbors,
                 umap_min_dist,
-                pn.pane.Markdown("#### DBSCAN parameters adjustment: "),
+                pn.pane.Markdown("#### DBSCAN parameters: "),
                 dbscan_max_distance_selection,
                 dbscan_n_samples_selection,
                 pn.pane.Markdown(""),
@@ -385,7 +364,7 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 tsne_df_x_axis_selection,
                 tsne_df_y_axis_selection,
-                pn.pane.Markdown("#### t-SNE parameters adjustment: "),
+                pn.pane.Markdown("#### t-SNE parameters: "),
                 tsne_perplexity,
                 tsne_early_exaggeration,
                 tsne_learning_rate,
@@ -397,11 +376,11 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 tsne_df_x_axis_selection,
                 tsne_df_y_axis_selection,
-                pn.pane.Markdown("#### t-SNE parameters adjustment: "),
+                pn.pane.Markdown("#### t-SNE parameters: "),
                 tsne_perplexity,
                 tsne_early_exaggeration,
                 tsne_learning_rate,
-                pn.pane.Markdown("#### K-Means parameters adjustment: "),
+                pn.pane.Markdown("#### K-Means parameters: "),
                 k_means_n_clusters_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
@@ -411,11 +390,11 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 tsne_df_x_axis_selection,
                 tsne_df_y_axis_selection,
-                pn.pane.Markdown("#### t-SNE parameters adjustment: "),
+                pn.pane.Markdown("#### t-SNE parameters: "),
                 tsne_perplexity,
                 tsne_early_exaggeration,
                 tsne_learning_rate,
-                pn.pane.Markdown("#### DBSCAN parameters adjustment: "),
+                pn.pane.Markdown("#### DBSCAN parameters: "),
                 dbscan_max_distance_selection,
                 dbscan_n_samples_selection,
                 pn.pane.Markdown(""),
@@ -426,7 +405,7 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 basic_df_x_axis_selection,
                 basic_df_y_axis_selection,
-                pn.pane.Markdown("#### OPTICS parameters adjustment: "),
+                pn.pane.Markdown("#### OPTICS parameters: "),
                 optics_max_eps,
                 optics_min_samples,
                 pn.pane.Markdown(""),
@@ -437,11 +416,11 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 tsne_df_x_axis_selection,
                 tsne_df_y_axis_selection,
-                pn.pane.Markdown("#### t-SNE parameters adjustment: "),
+                pn.pane.Markdown("#### t-SNE parameters: "),
                 tsne_perplexity,
                 tsne_early_exaggeration,
                 tsne_learning_rate,
-                pn.pane.Markdown("#### OPTICS parameters adjustment: "),
+                pn.pane.Markdown("#### OPTICS parameters: "),
                 optics_max_eps,
                 optics_min_samples,
                 pn.pane.Markdown(""),
@@ -452,10 +431,10 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 pca_df_x_axis_selection,
                 pca_df_y_axis_selection,
-                pn.pane.Markdown("#### PCA parameters adjustment: "),
+                pn.pane.Markdown("#### PCA parameters: "),
                 pca_whiten,
                 pca_svd_solver,
-                pn.pane.Markdown("#### OPTICS parameters adjustment: "),
+                pn.pane.Markdown("#### OPTICS parameters: "),
                 optics_max_eps,
                 optics_min_samples,
                 pn.pane.Markdown(""),
@@ -466,10 +445,10 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 umap_df_x_axis_selection,
                 umap_df_y_axis_selection,
-                pn.pane.Markdown("#### UMAP parameters adjustment: "),
+                pn.pane.Markdown("#### UMAP parameters: "),
                 umap_n_neighbors,
                 umap_min_dist,
-                pn.pane.Markdown("#### OPTICS parameters adjustment: "),
+                pn.pane.Markdown("#### OPTICS adjustment: "),
                 optics_max_eps,
                 optics_min_samples,
                 pn.pane.Markdown(""),
@@ -620,6 +599,7 @@ def dynamic_env(df):
                 <li> event_id: {str(selected_event_id)}
                 <li> start_time: {str(selected_event_df["start_time"])}
                 <li> asset_name: {str(selected_event_df["asset_name"])}
+                </ul>
                 """,
                 width=300
             ),
@@ -634,6 +614,7 @@ def dynamic_env(df):
                 <ul>
                 <li> {str(x_axis)}: {"%.5f" % selected_event_x_value}
                 <li> {str(y_axis)}: {"%.5f" % selected_event_y_value}
+                </ul>
                 """,
                 width=300
             )
@@ -652,6 +633,7 @@ def dynamic_env(df):
                     ** _Cluster value:_ **
                     <ul>
                     <li> cluster: {str(selected_event_df["cluster"])}
+                    </ul>
                     """,
                 )
             )
@@ -824,38 +806,33 @@ def dynamic_env(df):
                             (selected_df[y_axis] <= selected_event_y_value * (1 - similar_events_y_parameter)))]
         # For clustering algos
         else:
-            # Calculate the relative distance of the similar events in the same cluster to the selected event
+            # Add cluster value to the similar events dataframe
             selected_event_cluster = selected_event_df["cluster"]
             similar_events_df = selected_df.loc[(selected_df["cluster"] == selected_event_cluster)]
-            if x_axis == y_axis:
-                distances = []
-                for i in range(len(similar_events_df)):
-                    x_axis_distances = similar_events_df.iloc[i][x_axis] - selected_event_x_value
-                    distances.append(sqrt(x_axis_distances*x_axis_distances+x_axis_distances*x_axis_distances))
-                similar_events_df.insert(len(similar_events_df.columns) - 1,
-                                         'distance to selected point',
-                                         distances)
-            else:
-                distances = []
-                for i in range(len(similar_events_df)):
-                    x_axis_distance = similar_events_df.iloc[i][x_axis]-selected_event_x_value
-                    y_axis_distance = similar_events_df.iloc[i][y_axis]-selected_event_y_value
-                    distances.append(sqrt(x_axis_distance*x_axis_distance+y_axis_distance*y_axis_distance))
-                similar_events_df.insert(len(similar_events_df.columns)-1,
-                                         'distance to selected point',
-                                         distances)
+            # Calculate the relative distance of the similar events in the same cluster to the selected event
+            # Then add it to the similar events dataframe
+            relative_distances = []
+            for i in range(len(similar_events_df)):
+                x_distance = similar_events_df.iloc[i][x_axis] - selected_event_x_value
+                y_distance = similar_events_df.iloc[i][y_axis] - selected_event_y_value
+                relative_distances.append(sqrt(x_distance ** 2 + y_distance ** 2))
+            similar_events_df.insert(
+                len(similar_events_df.columns) - 1,
+                "Relative distance",
+                relative_distances
+            )
         similar_events_df.set_index("event_id", inplace=True)
 
         # Build similar events summary as a Tabulator
         similar_events_tabs = pn.widgets.Tabulator(
             similar_events_df,
+            header_filters=True,
             selectable="checkboxes",
             layout="fit_data_fill",
             pagination="local",
             page_size=10000,
             disabled=True,
-            width=1200,
-            header_filters=True
+            width=950
         )
 
         # Build a download widget which can download a csv file including the selection of similar events
@@ -903,27 +880,27 @@ def dynamic_env(df):
         similar_event_page = pn.Row(
             pn.Column(
                 # Event page element - similar events summary
+                "#### Similar events:",
                 pn.WidgetBox(
-                    "#### Simiar events:",
                     pn.Row(
                         pn.Column(
                             f"""
-                                            ** _Identifying similar events:_ **
-                                            <ul>
-                                            <li> A total of {str(len(similar_events_df.index) - 1)} similar events are identified.
-                                            <li> To display the selected events from the summary below:
-                                            </ul>
-                                            """,
+                            ** _Identifying similar events:_ **
+                            <ul>
+                            <li> A total of {str(len(similar_events_df.index) - 1)} similar events are identified.
+                            <li> To display the selected events from the summary below:
+                            </ul>
+                            _Note: Displaying more events leads to slower performance._
+                            """,
                             width=370
                         ),
                         pn.Column(
                             "<br>",
                             display_similar_events_button,
-                            "Warning :It's more time consuming to display more waveforms of similar events.",
                         )
                     ),
                     pn.Spacer(
-                        width=1200,
+                        width=950,
                         height=1,
                         background="lightgrey"
                     ),
@@ -948,12 +925,12 @@ def dynamic_env(df):
                         )
                     ),
                     pn.Spacer(
-                        width=1200,
+                        width=950,
                         height=1,
                         background="lightgrey"
                     ),
                     similar_events_tabs,
-                    width=1200
+                    width=1000
                 )
             )
         )
@@ -964,12 +941,27 @@ def dynamic_env(df):
         # Build similar events if the similar events button is clicked on the similar events summary Tabulator
         @pn.depends(display_similar_events_button)
         def build_similar_events(_):
-            selection = similar_events_tabs.selection
-            if bool(selection):
+            similar_events_selection = similar_events_tabs.selection
+            if bool(similar_events_selection):
                 similar_events_row = pn.Row()
-                for i in range(len(selection)):
+                similar_events_row.append(pn.Spacer(
+                    background="lightgrey",
+                    width=1,
+                    height=1260
+                    )
+                )
+                similar_events_row.append(build_event_page(
+                    selection, 
+                    selected_df, 
+                    x_axis, 
+                    y_axis, 
+                    clusters
+                    )
+                )
+
+                for i in range(len(similar_events_selection)):
                     # Identify the selected row in the Tabulator
-                    target_index = selection[i]
+                    target_index = similar_events_selection[i]
                     # Event page element - header
                     target_similar_event_header = "#### Similar event number " + str(i + 1) + ":"
                     # Read the target event from the dict
@@ -988,7 +980,7 @@ def dynamic_env(df):
                         )
                     else:
                         # Read the target event CSV file
-                        target_similar_event_df = similar_events_df.iloc[selection[i]]
+                        target_similar_event_df = similar_events_df.iloc[target_index]
                         target_similar_event_csv_filename = os.getcwd() + os.sep + "event_data" + \
                                                             os.sep + target_similar_event_df[
                                                                 "input_event_csv_filename"] + ".csv"
@@ -1143,7 +1135,6 @@ def dynamic_env(df):
                         similar_events_dict[target_index] = \
                             [target_similar_event_data_box, target_similar_event_waveforms_box]
                 return similar_events_row
-
         similar_event_page.append(build_similar_events)
 
         # Return the event page
@@ -1199,7 +1190,7 @@ def dynamic_env(df):
             ).interactive().add_selection(selector)
             vega_pane = pn.pane.Vega(plot, debounce=10)
 
-            # Build the interactive event page
+            # Build the interactive event tab
             def get_event(selection):
                 if not selection:
                     return '## No selection'
@@ -1211,7 +1202,7 @@ def dynamic_env(df):
                         basic_y_value,
                         None
                     )
-
+            # Build the interactive similar events tab
             def get_similar_events(selection):
                 if not selection:
                     return '## No selection'
@@ -1237,10 +1228,10 @@ def dynamic_env(df):
             pca = decomposition.PCA(
                 n_components=2,
                 whiten=pca_whiten_value,
-                svd_solver=pca_svd_solver_value)
-            pca.fit(df.copy())
-            pca_data = pca.transform(df.copy())
-            pca_labels = ["PC 1", "PC 2"]
+                svd_solver=pca_svd_solver_value
+            )
+            pca.fit(df)
+            pca_data = pca.transform(df)
             pca_df = pd.DataFrame(pca_data, columns=pca_labels)
 
             selected_df = pd.concat([metadata_df, pca_df], axis=1)
@@ -1288,9 +1279,9 @@ def dynamic_env(df):
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
                 ("Similar events", pn.bind(get_similar_events, vega_pane.selection.param.event_id))
             )
+
         # Option C: UMAP and no clustering algo
         elif dr_value == "UMAP" and clustering_value == "Nil":
-            # UMAP
             umap_reducer = umap.UMAP(
                 n_neighbors=umap_n_neighbors_value,
                 min_dist=umap_min_dist_value,
@@ -1298,7 +1289,6 @@ def dynamic_env(df):
             )
             umap_reducer.fit(df)
             umap_data = umap_reducer.transform(df)
-            umap_labels = ["UMAP 1", "UMAP 2"]
             umap_df = pd.DataFrame(umap_data, columns=umap_labels)
 
             selected_df = pd.concat([metadata_df, umap_df], axis=1)
@@ -1346,6 +1336,7 @@ def dynamic_env(df):
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
                 ("Similar events", pn.bind(get_similar_events, vega_pane.selection.param.event_id))
             )
+
         # Opton D: No dimensionality reduction and K-Means clustering algo
         elif dr_value == "Nil" and clustering_value == "K-Means":
             basic_kmeans = KMeans(n_clusters=k_means_n_clusters)
@@ -1399,21 +1390,21 @@ def dynamic_env(df):
                         None
                     )
 
-            # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
                 ("Similar events", pn.bind(get_similar_events, vega_pane.selection.param.event_id))
             )
+
         # Option E: PCA and K-Means
         elif dr_value == "PCA" and clustering_value == "K-Means":
             pca = decomposition.PCA(
                 n_components=2,
                 whiten=pca_whiten_value,
-                svd_solver=pca_svd_solver_value)
-            pca.fit(df.copy())
-            pca_data = pca.transform(df.copy())
-            pca_labels = ["PC 1", "PC 2"]
+                svd_solver=pca_svd_solver_value
+            )
+            pca.fit(df)
+            pca_data = pca.transform(df)
             pca_df = pd.DataFrame(pca_data, columns=pca_labels)
 
             pca_kmeans = KMeans(n_clusters=k_means_n_clusters)
@@ -1463,15 +1454,14 @@ def dynamic_env(df):
                         None
                     )
 
-            # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
                 ("Similar events", pn.bind(get_similar_events, vega_pane.selection.param.event_id))
             )
+
         # Option F: UMAP and K-Means
         elif dr_value == "UMAP" and clustering_value == "K-Means":
-            # UMAP
             umap_reducer = umap.UMAP(
                 n_neighbors=umap_n_neighbors_value,
                 min_dist=umap_min_dist_value,
@@ -1479,7 +1469,6 @@ def dynamic_env(df):
             )
             umap_reducer.fit(df)
             umap_data = umap_reducer.transform(df)
-            umap_labels = ["UMAP 1", "UMAP 2"]
             umap_df = pd.DataFrame(umap_data, columns=umap_labels)
 
             umap_kmeans = KMeans(n_clusters=k_means_n_clusters)
@@ -1529,12 +1518,12 @@ def dynamic_env(df):
                         None
                     )
 
-            # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
                 ("Similar events", pn.bind(get_similar_events, vega_pane.selection.param.event_id))
             )
+
         # Option G: No dimensionality reduction algo and DBSCAN clustering algo
         elif dr_value == "Nil" and clustering_value == "DBSCAN":
             basic_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
@@ -1588,24 +1577,27 @@ def dynamic_env(df):
                         None
                     )
 
-            # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
                 ("Similar events", pn.bind(get_similar_events, vega_pane.selection.param.event_id))
             )
-        # Option H: PCA and DBSCAN
+
+        # Option H: PCA and DBSCAN - bug
         elif dr_value == "PCA" and clustering_value == "DBSCAN":
             pca = decomposition.PCA(
                 n_components=2,
                 whiten=pca_whiten_value,
-                svd_solver=pca_svd_solver_value)
-            pca.fit(df.copy())
-            pca_data = pca.transform(df.copy())
-            pca_labels = ["PC 1", "PC 2"]
+                svd_solver=pca_svd_solver_value
+            )
+            pca.fit(df)
+            pca_data = pca.transform(df)
             pca_df = pd.DataFrame(pca_data, columns=pca_labels)
 
-            pca_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
+            pca_dbscan = DBSCAN(
+                eps=dbscan_max_distance_value, 
+                min_samples=dbscan_n_samples_value
+            )
             y_pred = pca_dbscan.fit_predict(pca_df)
 
             y_pred_df = pd.DataFrame(data={"cluster": y_pred})
@@ -1652,15 +1644,15 @@ def dynamic_env(df):
                         None
                     )
 
-            # Add overlay for centroids
             return pn.Tabs(
+                ("test", selected_df),
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
                 ("Similar events", pn.bind(get_similar_events, vega_pane.selection.param.event_id))
             )
+
         # Option I: UMAP and DBSCAN
         elif dr_value == "UMAP" and clustering_value == "DBSCAN":
-            # UMAP
             umap_reducer = umap.UMAP(
                 n_neighbors=umap_n_neighbors_value,
                 min_dist=umap_min_dist_value,
@@ -1668,8 +1660,8 @@ def dynamic_env(df):
             )
             umap_reducer.fit(df)
             umap_data = umap_reducer.transform(df)
-            umap_labels = ["UMAP 1", "UMAP 2"]
             umap_df = pd.DataFrame(umap_data, columns=umap_labels)
+
             umap_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
             y_pred = umap_dbscan.fit_predict(umap_df)
 
@@ -1717,7 +1709,6 @@ def dynamic_env(df):
                         None
                     )
 
-            # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
@@ -1733,7 +1724,6 @@ def dynamic_env(df):
                 random_state=0
             )
             tsne_data = tsne.fit_transform(df)
-            tsne_labels = ["t-SNE 1", "t-SNE 2"]
             tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
 
             selected_df = pd.concat([metadata_df, tsne_df], axis=1)
@@ -1775,7 +1765,6 @@ def dynamic_env(df):
                         basic_similar_events_y_value
                     )
 
-            # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
@@ -1791,7 +1780,6 @@ def dynamic_env(df):
                 random_state=0
             )
             tsne_data = tsne.fit_transform(df)
-            tsne_labels = ["t-SNE 1", "t-SNE 2"]
             tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
 
             tsne_kmeans = KMeans(n_clusters=k_means_n_clusters)
@@ -1841,7 +1829,6 @@ def dynamic_env(df):
                         None
                     )
 
-            # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
@@ -1857,7 +1844,6 @@ def dynamic_env(df):
                 random_state=0
             )
             tsne_data = tsne.fit_transform(df)
-            tsne_labels = ["t-SNE 1", "t-SNE 2"]
             tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
 
             tsne_dbscan = DBSCAN(eps=dbscan_max_distance_value, min_samples=dbscan_n_samples_value)
@@ -1907,7 +1893,6 @@ def dynamic_env(df):
                         None
                     )
 
-            # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
@@ -1969,7 +1954,6 @@ def dynamic_env(df):
                         None
                     )
 
-            # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
@@ -1985,12 +1969,12 @@ def dynamic_env(df):
                 random_state=0
             )
             tsne_data = tsne.fit_transform(df)
-            tsne_labels = ["t-SNE 1", "t-SNE 2"]
             tsne_df = pd.DataFrame(tsne_data, columns=tsne_labels)
 
             tsne_optics = OPTICS(
                 min_samples=optics_min_samples_value,
-                max_eps=optics_max_eps_value)
+                max_eps=optics_max_eps_value
+            )
             y_pred = tsne_optics.fit_predict(tsne_df)
 
             y_pred_df = pd.DataFrame(data={"cluster": y_pred})
@@ -2037,26 +2021,27 @@ def dynamic_env(df):
                         None
                     )
 
-            # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
                 ("Similar events", pn.bind(get_similar_events, vega_pane.selection.param.event_id))
             )
+
         # Option O: PCA and OPTICS
         elif dr_value == "PCA" and clustering_value == "OPTICS":
             pca = decomposition.PCA(
                 n_components=2,
                 whiten=pca_whiten_value,
-                svd_solver=pca_svd_solver_value)
-            pca.fit(df.copy())
-            pca_data = pca.transform(df.copy())
-            pca_labels = ["PC 1", "PC 2"]
+                svd_solver=pca_svd_solver_value
+            )
+            pca.fit(df)
+            pca_data = pca.transform(df)
             pca_df = pd.DataFrame(pca_data, columns=pca_labels)
 
             pca_optics = OPTICS(
                 min_samples=optics_min_samples_value,
-                max_eps=optics_max_eps_value)
+                max_eps=optics_max_eps_value
+            )
             y_pred = pca_optics.fit_predict(pca_df)
 
             y_pred_df = pd.DataFrame(data={"cluster": y_pred})
@@ -2103,7 +2088,6 @@ def dynamic_env(df):
                         None
                     )
 
-            # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
@@ -2120,11 +2104,12 @@ def dynamic_env(df):
             )
             umap_reducer.fit(df)
             umap_data = umap_reducer.transform(df)
-            umap_labels = ["UMAP 1", "UMAP 2"]
             umap_df = pd.DataFrame(umap_data, columns=umap_labels)
+
             umap_optics = OPTICS(
                 min_samples=optics_min_samples_value,
-                max_eps=optics_max_eps_value)
+                max_eps=optics_max_eps_value
+            )
             y_pred = umap_optics.fit_predict(umap_df)
 
             y_pred_df = pd.DataFrame(data={"cluster": y_pred})
@@ -2171,7 +2156,6 @@ def dynamic_env(df):
                         None
                     )
 
-            # Add overlay for centroids
             return pn.Tabs(
                 ("Data-exploration pane", vega_pane),
                 ("Selected event", pn.bind(get_event, vega_pane.selection.param.event_id)),
