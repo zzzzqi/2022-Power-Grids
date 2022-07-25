@@ -209,7 +209,7 @@ def dynamic_env(df):
     )
     # DBSCAN selection options
     dbscan_max_distance_selection = pn.widgets.FloatSlider(
-        value=0,
+        value=1.0,
         start=1.0,
         end=10.0,
         step=0.1,
@@ -225,7 +225,7 @@ def dynamic_env(df):
 
     # OPTICS selection options
     optics_max_eps = pn.widgets.FloatSlider(
-        value=0,
+        value=1.0,
         start=1.0,
         end=10.0,
         step=0.1,
@@ -310,7 +310,7 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### Data-exploration pane options: "),
                 basic_df_x_axis_selection,
                 basic_df_y_axis_selection,
-                pn.pane.Markdown("#### K-Means cluster number adjustment: "),
+                pn.pane.Markdown("#### K-Means parameters adjustment: "),
                 k_means_n_clusters_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
@@ -323,7 +323,7 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### PCA parameters adjustment: "),
                 pca_whiten,
                 pca_svd_solver,
-                pn.pane.Markdown("#### K-Means cluster number adjustment: "),
+                pn.pane.Markdown("#### K-Means parameters adjustment: "),
                 k_means_n_clusters_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
@@ -336,7 +336,7 @@ def dynamic_env(df):
                 pn.pane.Markdown("#### UMAP parameters adjustment: "),
                 umap_n_neighbors,
                 umap_min_dist,
-                pn.pane.Markdown("#### K-Means cluster number adjustment: "),
+                pn.pane.Markdown("#### K-Means parameters adjustment: "),
                 k_means_n_clusters_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
@@ -401,7 +401,7 @@ def dynamic_env(df):
                 tsne_perplexity,
                 tsne_early_exaggeration,
                 tsne_learning_rate,
-                pn.pane.Markdown("#### K-Means cluster number adjustment: "),
+                pn.pane.Markdown("#### K-Means parameters adjustment: "),
                 k_means_n_clusters_selection,
                 pn.pane.Markdown(""),
                 width=widgetbox_width
