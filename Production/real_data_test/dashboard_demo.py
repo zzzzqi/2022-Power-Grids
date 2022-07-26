@@ -1014,8 +1014,12 @@ def dynamic_env(df):
         @pn.depends(display_similar_events_button)
         def build_similar_events(_):
             similar_events_selection = similar_events_tabs.selection
+            selected_similar_events_df = similar_events_tabs.selected_dataframe
+            selected_similar_events_df = selected_similar_events_df.reset_index()
+
             if bool(similar_events_selection):
                 similar_events_row = pn.Row()
+                similar_events_row.append(selected_similar_events_df["event_id"])
                 similar_events_row.append(pn.Spacer(
                     background="lightgrey",
                     width=1,
@@ -1031,35 +1035,36 @@ def dynamic_env(df):
                     )
                 )
 
-                for i in range(len(similar_events_selection)):
-                    # Identify the selected row in the Tabulator
-                    target_index = similar_events_selection[i]
+                for i in range(len(selected_similar_events_df)):
+                    # Identify the event_id of the selected similar events
+                    target_similar_event_df = selected_similar_events_df.iloc[i]
+                    target_similar_event_id = selected_similar_events_df.iloc[i, 
+                    selected_similar_events_df.columns.get_loc("event_id")]
+
                     # Event page element - header
                     target_similar_event_header = "#### Similar event number " + str(i + 1) + ":"
                     # Read the target event from the dict
-                    if target_index in similar_events_dict:
+                    if target_similar_event_id in similar_events_dict:
                         similar_events_row.append(pn.Spacer(
                             background="lightgrey",
                             width=1,
                             height=1260
-                        )
+                            )
                         )
                         similar_events_row.append(pn.Column(
                             target_similar_event_header,
-                            similar_events_dict.get(target_index)[0],
-                            similar_events_dict.get(target_index)[1]
-                        )
+                            similar_events_dict.get(target_similar_event_id)[0],
+                            similar_events_dict.get(target_similar_event_id)[1]
+                            )
                         )
                     else:
                         # Read the target event CSV file
-                        target_similar_event_df = similar_events_df.iloc[target_index]
                         target_similar_event_csv_filename = os.getcwd() + os.sep + "event_data" + \
                                                             os.sep + target_similar_event_df[
                                                                 "input_event_csv_filename"] + ".csv"
                         target_similar_event_details_df = pd.read_csv(target_similar_event_csv_filename, header=0)
 
                         # Extract the event data
-                        target_similar_event_id = target_similar_event_details_df["event_id"].values[0]
                         target_similar_event_start_time = target_similar_event_details_df["start_time"].values[0]
                         target_similar_event_asset_name = target_similar_event_details_df["asset_name"].values[0]
                         target_similar_event_x_value = target_similar_event_df[x_axis]
@@ -1203,8 +1208,8 @@ def dynamic_env(df):
                             target_similar_event_waveforms_box
                         )
                         )
-                        # Store the elements in the cache dictionary
-                        similar_events_dict[target_index] = \
+                        # Store the elements in the cache dictionary - TODO
+                        similar_events_dict[target_similar_event_id] = \
                             [target_similar_event_data_box, target_similar_event_waveforms_box]
                 return similar_events_row
         similar_event_page.append(build_similar_events)
