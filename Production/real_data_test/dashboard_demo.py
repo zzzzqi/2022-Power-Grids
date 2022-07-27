@@ -922,14 +922,18 @@ def dynamic_env(df):
         def _download_callback():
             sio = io.StringIO()
             similar_events_selection = similar_events_tabs.selection
-            selected_similar_events_df = pd.DataFrame(columns=similar_events_df.columns)
+            similar_events_df_copy = similar_events_df.reset_index()
+            
+            selected_similar_events_df = pd.DataFrame(columns=similar_events_df_copy.columns)
             for i in range(len(similar_events_selection)):
                 target_index = similar_events_selection[i]
-                selected_similar_events_df.loc[i] = (similar_events_df.iloc[target_index])
+                selected_similar_events_df.loc[i] = (similar_events_df_copy.iloc[target_index])
+            
             selected_similar_events_df.insert(
                 len(selected_similar_events_df.columns),
                 'group_name',
                 group_name_widgets.value)
+            
             selected_similar_events_df.to_csv(sio, index=False)
             sio.seek(0)
             return sio
