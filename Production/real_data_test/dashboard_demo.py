@@ -921,7 +921,11 @@ def dynamic_env(df):
 
         def _download_callback():
             sio = io.StringIO()
-            selected_similar_events_df = similar_events_tabs.selected_dataframe
+            similar_events_selection = similar_events_tabs.selection
+            selected_similar_events_df = pd.DataFrame(columns=similar_events_df.columns)
+            for i in range(len(similar_events_selection)):
+                target_index = similar_events_selection[i]
+                selected_similar_events_df.loc[i] = (similar_events_df.iloc[target_index])
             selected_similar_events_df.insert(
                 len(selected_similar_events_df.columns),
                 'group_name',
@@ -1014,15 +1018,11 @@ def dynamic_env(df):
         @pn.depends(display_similar_events_button)
         def build_similar_events(_):
             similar_events_selection = similar_events_tabs.selection
-            # selected_similar_events_df = similar_events_tabs.selected_dataframe
-            # selected_similar_events_df = selected_similar_events_df.reset_index()
 
             if bool(similar_events_selection):
                 similar_events_df_copy = similar_events_df.reset_index()
 
                 similar_events_row = pn.Row()
-                similar_events_row.append(similar_events_tabs.current_view)
-                similar_events_row.append(similar_events_tabs.selection)
                 similar_events_row.append(pn.Spacer(
                     background="lightgrey",
                     width=1,
@@ -1037,12 +1037,6 @@ def dynamic_env(df):
                     clusters
                     )
                 )
-
-                # for i in range(len(selected_similar_events_df)):
-                #     # Identify the event_id of the selected similar events
-                #     target_similar_event_df = selected_similar_events_df.iloc[i]
-                #     target_similar_event_id = selected_similar_events_df.iloc[i, 
-                #     selected_similar_events_df.columns.get_loc("event_id")]
 
                 for i in range(len(similar_events_selection)):
                     target_index = similar_events_selection[i]
