@@ -1,9 +1,10 @@
 import os
 import re
+import io
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image
+import PIL
 import tensorflow as tf
 from tensorflow.keras import models, preprocessing
 from enum import Enum
@@ -56,7 +57,7 @@ def phase_space_graph(import_csv, export_path, tau=20):
         fig.savefig(image_name, dpi=100)
         plt.close(fig)
 
-        rgb_image = Image.open(image_name)
+        rgb_image = PIL.Image.open(image_name)
         grayscale_image = rgb_image.convert("L")
         grayscale_image.save(image_name)
 
@@ -146,6 +147,82 @@ def make_predictions(current_dir, psr_dir, output_csv_filename):
     # Save the dataframe as a CSV file
     output_df.to_csv(current_dir + os.sep + output_csv_filename)
 
+
+# The function called by command tool
+def prediction_from_signal(input_event_dir, current_dir, output_csv_filepath):
+
+    # Load the trained CNN model
+    cnn_model_name = "basic_pqd_cnn.h5"
+    cnn_model_path = current_dir + os.sep + "trained_cnn_models" + os.sep + cnn_model_name
+    cnn = models.load_model(cnn_model_path)
+
+    # Create the output csv file with the column names
+    f = open(output_csv_filepath, 'w')
+    csv_writer = csv.writer(f)
+    csv_writer.writerow(output_csv_columns) # load the header of the table
+
+    # Conversion of events to 2D images
+    files = os.listdir(input_event_dir)
+    for file in files:
+        if re.search('.csv$', file) is not None:
+
+            signal = pd.read_csv(input_event_dir + os.sep + file, index_col=3)  # index_col means choose which col as the row labels
+
+            event_list = []
+            event_list.append(file[:len(file) - len(".csv")])
+            for i in range(3):
+                event_list.append(signal.iloc[0, i])
+
+            plt.style.use('grayscale')
+            fig, ax = plt.subplots(dpi=100)
+            plt.rc("font", size=7)
+
+            plt.xlim(-2, 2, 1)
+            plt.ylim(-2, 2, 1)
+            plt.axis('on')
+            fig.set_size_inches(2, 2)
+
+            image, = ax.plot(0, 0)  # initialize plot
+
+            for waveform in Waveforms:
+                
+
+                # Normalise the voltage and current data values to between -1 and 1
+                waveform_values = signal[waveform.value].copy()
+                max_value = waveform_values.max()
+                for i in range(len(waveform_values)):
+                    waveform_values.iloc[i] /= max_value
+
+                image.set_data(waveform_values, np.roll(waveform_values, 20))
+                
+                plt.draw()
+                io_buf = io.BytesIO()
+                fig.savefig(io_buf, format="png", dpi=100)
+                io_buf.seek(0)
+
+                im = PIL.Image.open(io_buf)
+                prediction_image = im.convert('L')
+
+                prediction_image_array = preprocessing.image.img_to_array(
+                    prediction_image
+                )
+                prediction_image_array = np.array(
+                    [prediction_image_array]
+                )
+                predictions = cnn.predict(prediction_image_array)
+                for i in range(10):
+                    event_list.append(predictions[0][i])
+
+                io_buf.close()
+                plt.close(fig)
+
+            csv_writer.writerow(event_list)
+
+    f.close()
+
+
+
+
 ## Define the command line tool options
 @click.command()
 @click.option(
@@ -160,11 +237,15 @@ def make_predictions(current_dir, psr_dir, output_csv_filename):
     '--output_name', 
     default='cnn_output',
     help="Change the name of the output file.")
+@click.option(
+    '--no_images', 'noimages', 
+    default=False, 
+    help="This option will prediect the signal without exporting images")
 @click.argument(
     "filepath", 
     type=click.Path(exists=True))
 
-def main(filepath, convert, predict, output_name):
+def main(filepath, convert, predict, output_name, noimages):
     """
     This is the command line tool for handling input events. \n
     This tool reads CSV files as inputs, converts the waveforms to PSR images, 
@@ -178,11 +259,21 @@ def main(filepath, convert, predict, output_name):
     input_event_dir = current_dir + os.sep + "event_data"
     psr_dir = current_dir + os.sep + "event_waveform_images"
 
-    if convert:
-        convert_signals(psr_dir, output_csv_filename, input_event_dir)
+    # if convert:
+    #     convert_signals(psr_dir, output_csv_filename, input_event_dir)
     
-    if predict:
-        make_predictions(current_dir, psr_dir, output_csv_filename)
+    # if predict:
+    #     make_predictions(current_dir, psr_dir, output_csv_filename)
     
+    if noimages:
+        prediction_from_signal(input_event_dir, current_dir, output_csv_filename)
+        # print("predict without exporting images")
+    else:
+        if convert:
+            convert_signals(psr_dir, output_csv_filename, input_event_dir)
+        
+        if predict:
+            make_predictions(current_dir, psr_dir, output_csv_filename)
+
 if __name__ == '__main__':
     main()
