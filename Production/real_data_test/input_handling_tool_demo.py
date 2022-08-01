@@ -13,6 +13,7 @@ import click
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+
 # Define the six waveforms as enums
 class Waveforms(Enum):
     Vab = 'Vab'
@@ -22,10 +23,43 @@ class Waveforms(Enum):
     Ib = 'Ib'
     Ic = 'Ic'
 
+
 # Define helper function for making directories
 def mkdir(path):
     if not os.path.exists(path):
         os.makedirs(path)
+
+
+# The function first detect the positive and negative transformation of the signal twice,
+# then using the value between these two times as a signal interval for detecting extreme values
+# Function for detect the value of the first extreme point in the signal
+def find_extreme_value(signal):
+    count = 0  # The number of the signal change its sign
+    start_point = 0  # The first index when the signal change its sign
+    end_point = 0  # The second index when the signal change its sign
+    index = 0
+    max_value = 0
+    signal_sign = list(np.sign(signal.astype(int)))  # np.sign: return -1 if x<0; 0 if x==0; 1 if x>0
+    temporary_value = signal_sign[index]  # The sign of the first point of the signal
+
+    while index < len(signal) and count < 2:
+
+        if signal_sign[index] is not temporary_value:
+            temporary_value = signal_sign[index]
+            count += 1
+            if count == 1:
+                start_point = index
+            if count == 2:
+                end_point = index
+
+                max_value = np.amax(np.fabs(signal.iloc[start_point:end_point]))
+                # return the maximum of the array after absoluting the array
+                if max_value == 0:
+                    count -= 1
+        index += 1
+
+    return max_value
+
 
 # Define helper function for converting the six waveforms at the same time
 def phase_space_graph(import_csv, export_path, tau=20):
@@ -40,18 +74,21 @@ def phase_space_graph(import_csv, export_path, tau=20):
     plt.ylim(-2, 2, 1)
     plt.axis('on')
     fig.set_size_inches(2, 2)
-    
-    image, = ax.plot(0, 0) # initialize plot
-    
+
+    image, = ax.plot(0, 0)  # initialize plot
+
     for waveform in Waveforms:
         image_name = export_path + "_{0}.png".format(waveform.value)
-        
+
         # Normalise the voltage and current data values to between -1 and 1
         waveform_values = signal[waveform.value].copy()
-        max_value = waveform_values.max()
+        max_value = find_extreme_value(waveform_values)
+        # if max_value == 0:
+        #     print(image_name)
+        print(image_name + ":{0}".format(max_value))  # print the max value
         for i in range(len(waveform_values)):
             waveform_values.iloc[i] /= max_value
-        
+
         image.set_data(waveform_values, np.roll(waveform_values, tau))
         plt.draw()
         fig.savefig(image_name, dpi=100)
@@ -61,22 +98,24 @@ def phase_space_graph(import_csv, export_path, tau=20):
         grayscale_image = rgb_image.convert("L")
         grayscale_image.save(image_name)
 
+
 # Define the column names for the output csv file
 output_csv_columns = [
-    "event_id", "start_time", "asset_name", "input_event_csv_filename", 
+    "event_id", "start_time", "asset_name", "input_event_csv_filename",
     "vab_flickers", "vab_harmonics", "vab_interruptions", "vab_interruptions_harmonics", "vab_osc_transients",
     "vab_sags", "vab_sags_harmonics", "vab_spikes", "vab_swells", "vab_swells_harmonics",
     "vbc_flickers", "vbc_harmonics", "vbc_interruptions", "vbc_interruptions_harmonics", "vbc_osc_transients",
-    "vbc_sags", "vbc_sags_harmonics", "vbc_spikes", "vbc_swells", "vbc_swells_harmonics", 
-    "vca_flickers", "vca_harmonics", "vca_interruptions", "vca_interruptions_harmonics", "vca_osc_transients", 
-    "vca_sags", "vca_sags_harmonics", "vca_spikes", "vca_swells", "vca_swells_harmonics", 
-    "ia_flickers", "ia_harmonics", "ia_interruptions", "ia_interruptions_harmonics", "ia_osc_transients", 
-    "ia_sags", "ia_sags_harmonics", "ia_spikes", "ia_swells", "ia_swells_harmonics", 
-    "ib_flickers", "ib_harmonics", "ib_interruptions", "ib_interruptions_harmonics", "ib_osc_transients", 
-    "ib_sags", "ib_sags_harmonics", "ib_spikes", "ib_swells", "ib_swells_harmonics", 
-    "ic_flickers", "ic_harmonics", "ic_interruptions", "ic_interruptions_harmonics", "ic_osc_transients", 
+    "vbc_sags", "vbc_sags_harmonics", "vbc_spikes", "vbc_swells", "vbc_swells_harmonics",
+    "vca_flickers", "vca_harmonics", "vca_interruptions", "vca_interruptions_harmonics", "vca_osc_transients",
+    "vca_sags", "vca_sags_harmonics", "vca_spikes", "vca_swells", "vca_swells_harmonics",
+    "ia_flickers", "ia_harmonics", "ia_interruptions", "ia_interruptions_harmonics", "ia_osc_transients",
+    "ia_sags", "ia_sags_harmonics", "ia_spikes", "ia_swells", "ia_swells_harmonics",
+    "ib_flickers", "ib_harmonics", "ib_interruptions", "ib_interruptions_harmonics", "ib_osc_transients",
+    "ib_sags", "ib_sags_harmonics", "ib_spikes", "ib_swells", "ib_swells_harmonics",
+    "ic_flickers", "ic_harmonics", "ic_interruptions", "ic_interruptions_harmonics", "ic_osc_transients",
     "ic_sags", "ic_sags_harmonics", "ic_spikes", "ic_swells", "ic_swells_harmonics"
-    ]
+]
+
 
 def convert_signals(psr_dir, output_csv_filename, input_event_dir):
     ## Step 1: Generate 2D images from the event signals
@@ -92,19 +131,20 @@ def convert_signals(psr_dir, output_csv_filename, input_event_dir):
     files = os.listdir(input_event_dir)
     for filename in files:
         if re.search(".csv$", filename) is not None:
-            export_image_name = filename[:len(filename) - csv_suffix_length] # delete the suffix of csv file
+            export_image_name = filename[:len(filename) - csv_suffix_length]  # delete the suffix of csv file
             export_path = psr_dir + os.sep + export_image_name
             phase_space_graph(filename, export_path)
 
             input_event_path = input_event_dir + os.sep + filename
             input_event_signals = pd.read_csv(input_event_path, index_col=4)
-            input_event_row = [] 
+            input_event_row = []
             for i in range(3):
                 input_event_row.append(input_event_signals.iloc[0, i])
             input_event_row.append(filename[:len(filename) - csv_suffix_length])
 
             csv_writer.writerow(input_event_row)
     f.close()
+
 
 def make_predictions(current_dir, psr_dir, output_csv_filename):
     ## Step 2: Use the CNN model to classify the images
@@ -119,7 +159,7 @@ def make_predictions(current_dir, psr_dir, output_csv_filename):
     pqd_categories = [
         "flickers", "harmonics", "interruptions", "interruptions_harmonics", "osc_transients",
         "sags", "sags_harmonics", "spikes", "swells", "swells_harmonics"
-        ]
+    ]
     output_df = pd.read_csv(output_csv_filename, index_col=3)
     png_suffix_length = len(".png")
     for image_name in event_waveform_images:
@@ -141,7 +181,7 @@ def make_predictions(current_dir, psr_dir, output_csv_filename):
             predictions = cnn.predict(target_image_array)
             for i in range(10):
                 output_df.loc[
-                    input_event_filename, 
+                    input_event_filename,
                     target_waveform.lower() + "_" + pqd_categories[i]] = predictions[0][i]
 
     # Save the dataframe as a CSV file
@@ -150,7 +190,6 @@ def make_predictions(current_dir, psr_dir, output_csv_filename):
 
 # The function called by command tool
 def prediction_from_signal(input_event_dir, current_dir, output_csv_filepath):
-
     # Load the trained CNN model
     cnn_model_name = "basic_pqd_cnn.h5"
     cnn_model_path = current_dir + os.sep + "trained_cnn_models" + os.sep + cnn_model_name
@@ -159,14 +198,15 @@ def prediction_from_signal(input_event_dir, current_dir, output_csv_filepath):
     # Create the output csv file with the column names
     f = open(output_csv_filepath, 'w')
     csv_writer = csv.writer(f)
-    csv_writer.writerow(output_csv_columns) # load the header of the table
+    csv_writer.writerow(output_csv_columns)  # load the header of the table
 
     # Conversion of events to 2D images
     files = os.listdir(input_event_dir)
     for file in files:
         if re.search('.csv$', file) is not None:
 
-            signal = pd.read_csv(input_event_dir + os.sep + file, index_col=3)  # index_col means choose which col as the row labels
+            signal = pd.read_csv(input_event_dir + os.sep + file,
+                                 index_col=3)  # index_col means choose which col as the row labels
 
             event_list = []
             event_list.append(file[:len(file) - len(".csv")])
@@ -185,7 +225,6 @@ def prediction_from_signal(input_event_dir, current_dir, output_csv_filepath):
             image, = ax.plot(0, 0)  # initialize plot
 
             for waveform in Waveforms:
-                
 
                 # Normalise the voltage and current data values to between -1 and 1
                 waveform_values = signal[waveform.value].copy()
@@ -194,7 +233,7 @@ def prediction_from_signal(input_event_dir, current_dir, output_csv_filepath):
                     waveform_values.iloc[i] /= max_value
 
                 image.set_data(waveform_values, np.roll(waveform_values, 20))
-                
+
                 plt.draw()
                 io_buf = io.BytesIO()
                 fig.savefig(io_buf, format="png", dpi=100)
@@ -221,30 +260,27 @@ def prediction_from_signal(input_event_dir, current_dir, output_csv_filepath):
     f.close()
 
 
-
-
 ## Define the command line tool options
 @click.command()
 @click.option(
-    "--convert", 
+    "--convert",
     default=True,
     help="Convert the signals to PSR images.")
 @click.option(
-    "--predict", 
-    default=True, 
+    "--predict",
+    default=True,
     help="Make predictions on the PQD types of each signal.")
 @click.option(
-    '--output_name', 
+    '--output_name',
     default='cnn_output',
     help="Change the name of the output file.")
 @click.option(
-    '--no_images', 'noimages', 
-    default=False, 
+    '--no_images', 'noimages',
+    default=False,
     help="This option will prediect the signal without exporting images")
 @click.argument(
-    "filepath", 
+    "filepath",
     type=click.Path(exists=True))
-
 def main(filepath, convert, predict, output_name, noimages):
     """
     This is the command line tool for handling input events. \n
@@ -259,21 +295,17 @@ def main(filepath, convert, predict, output_name, noimages):
     input_event_dir = current_dir + os.sep + "event_data"
     psr_dir = current_dir + os.sep + "event_waveform_images"
 
-    # if convert:
-    #     convert_signals(psr_dir, output_csv_filename, input_event_dir)
-    
-    # if predict:
-    #     make_predictions(current_dir, psr_dir, output_csv_filename)
-    
     if noimages:
         prediction_from_signal(input_event_dir, current_dir, output_csv_filename)
-        # print("predict without exporting images")
+
     else:
         if convert:
             convert_signals(psr_dir, output_csv_filename, input_event_dir)
-        
+
         if predict:
             make_predictions(current_dir, psr_dir, output_csv_filename)
 
+
 if __name__ == '__main__':
+    # main('.')
     main()
