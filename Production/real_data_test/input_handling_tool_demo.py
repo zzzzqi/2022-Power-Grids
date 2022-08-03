@@ -83,9 +83,7 @@ def phase_space_graph(import_csv, export_path, tau=20):
         # Normalise the voltage and current data values to between -1 and 1
         waveform_values = signal[waveform.value].copy()
         max_value = find_extreme_value(waveform_values)
-        # if max_value == 0:
-        #     print(image_name)
-        print(image_name + ":{0}".format(max_value))  # print the max value
+        # print(image_name + ":{0}".format(max_value))  # print the max value
         for i in range(len(waveform_values)):
             waveform_values.iloc[i] /= max_value
 
@@ -228,7 +226,7 @@ def prediction_from_signal(input_event_dir, current_dir, output_csv_filepath):
 
                 # Normalise the voltage and current data values to between -1 and 1
                 waveform_values = signal[waveform.value].copy()
-                max_value = waveform_values.max()
+                max_value = find_extreme_value(waveform_values)
                 for i in range(len(waveform_values)):
                     waveform_values.iloc[i] /= max_value
 
