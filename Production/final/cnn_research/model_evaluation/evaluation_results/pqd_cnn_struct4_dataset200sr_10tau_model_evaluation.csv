@@ -1,0 +1,16 @@
+,0,1,2,3,4,5,6,7,8,9,10
+0,category,flickers,harmonics,interruptions,interruptions_harmonics,osc_transients,sags,sags_harmonics,spikes,swells,swells_harmonics
+1,flickers,0,0,0,0,0,0,0,0,289,11
+2,harmonics,0,165,0,18,0,0,16,0,0,101
+3,interruptions,0,0,2,297,0,0,1,0,0,0
+4,interruptions_harmonics,0,0,0,273,0,0,24,0,0,3
+5,osc_transients,0,2,0,2,175,0,0,0,29,92
+6,sags,0,0,1,39,39,0,133,11,76,1
+7,sags_harmonics,0,4,0,28,0,0,251,0,0,17
+8,spikes,0,18,1,9,23,0,0,0,84,165
+9,swells,0,0,0,5,20,0,0,0,74,201
+10,swells_harmonics,0,0,0,0,0,0,0,0,0,300
+11,,,,,,,,,,,
+12,Classification accuracy,0.41333,,,,,,,,,
+13,,,,,,,,,,,
+14,Macro-F1 score,0.32486,,,,,,,,,
