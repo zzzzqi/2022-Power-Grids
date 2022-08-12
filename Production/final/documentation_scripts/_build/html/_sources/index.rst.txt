@@ -6,6 +6,8 @@
 Documentation of the Smart Power Grids project
 ==============================================
 
+Install dependencies with "pip install -r requirements.txt"
+
 Part One: Input Handling Tool
 -----------------------------
 *This is a script to read power quality events, analyse their signals, 
