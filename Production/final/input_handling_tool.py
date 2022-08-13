@@ -45,13 +45,14 @@ def find_extreme_value(signal):
     end_point = 0  # The second index when the signal change its sign
     index = 0
     max_value = 0
-    signal_sign = list(np.sign(signal.astype(int)))  # np.sign: return -1 if x<0; 0 if x==0; 1 if x>0
-    temporary_value = signal_sign[index]  # The sign of the first point of the signal
+    signal_copy = signal * 1000
+    signal_sign = np.sign(signal_copy.astype(int))  # np.sign: return -1 if x<0; 0 if x==0; 1 if x>0
+    temporary_value = signal_sign.iloc[index]  # The sign of the first point of the signal
 
     while index < len(signal) and count < 2:
 
-        if signal_sign[index] is not temporary_value:
-            temporary_value = signal_sign[index]
+        if signal_sign.iloc[index] != temporary_value:
+            temporary_value = signal_sign.iloc[index]
             count += 1
             if count == 1:
                 start_point = index
@@ -60,7 +61,7 @@ def find_extreme_value(signal):
 
                 max_value = np.amax(np.fabs(signal.iloc[start_point:end_point]))
                 # return the maximum of the array after absoluting the array
-                if max_value == 0:
+                if max_value * 1000 == 0:
                     count -= 1
         index += 1
 
@@ -89,7 +90,7 @@ def phase_space_graph(import_csv, export_path, tau=20):
         # Normalise the voltage and current data values to between -1 and 1
         waveform_values = signal[waveform.value].copy()
         max_value = find_extreme_value(waveform_values)
-        # print(image_name + ":{0}".format(max_value))  # print the max value
+        # print(image_name + ":{0:5f}".format(max_value))  # print the max value
         for i in range(len(waveform_values)):
             waveform_values.iloc[i] /= max_value
 
