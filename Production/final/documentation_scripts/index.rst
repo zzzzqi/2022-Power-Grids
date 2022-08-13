@@ -9,10 +9,105 @@ Documentation of the Smart Power Grids project
 Install dependencies with "pip install -r requirements.txt"
 
 Part One: Input Handling Tool
------------------------------
+----------------------------------
 *This is a script to read power quality events, analyse their signals, 
 and classify them according to IEEE standards, enabled by the use
 of a Convolutional Neural Network (CNN).*
+
+Link to the `Part One script`_.
+
+.. _Part One script: https://github.com/zzzzqi/2022-Power-Grids/blob/main/Production/final/input_handling_tool.py/
+
+How to use the tool:
+^^^^^^^^^^^^^^^^^^^^
+Preparation
+""""""""""""
+After installing the 'click' library, run the following command in the folder where the program is located::
+
+   pip install --editable .
+
+
+Usage
+""""""
+This tool reads CSV files as inputs, converts the waveforms to PSR images, and uses the trained CNN model to generate predictions on their PQD types.::
+   
+   Use: 
+      handleinput [OPTIONS] FILEPATH 
+   Help: 
+      handleinput --help
+
+
+Method:
+^^^^^^^
+
+.. py:function:: main(filepath, convert, predict, output_name, noimages):
+
+   This method control the script and excute the script according to the options
+
+   :param filepath: the path of the program
+   :param convert: convert the signals to PSR images
+   :param predict: make predictions on the PQD types of each signal.
+   :param output_name: the name of the output csv file
+   :param noimages: whether to output images during classification
+
+|
+
+.. py:function:: convert_signals(input_event_dir, psr_dir, output_csv_filepath):
+
+   This method generate 2D images from the event signals
+
+   :param input_event_dir: path of the folder where the input event data are stored
+   :param psr_dir: path of the folder where the 2D images are stored
+   :param output_csv_filepath: path of the output csv file
+
+|
+
+.. py:function:: make_predictions(cnn_model_path, psr_dir, output_csv_filepath):
+
+   This method uses the the cnn model to classify the images which stored in the psr_dir
+
+   :param cnn_model_path: path of the cnn model
+   :param psr_dir: path of the folder where the 2D images are stored
+   :param output_csv_filepath: path of the output csv file
+
+|
+
+.. py:function:: prediction_from_signal(cnn_model_path, input_event_dir, output_csv_filepath):
+
+   This method uses the the cnn model to classify the data - which stored in the input_event_dir - directly
+
+   :param cnn_model_path: path of the cnn model
+   :param input_event_dir: path of the folder where the input event data are stored
+   :param output_csv_filepath: path of the output csv file
+
+|
+
+.. py:function:: phase_space_graph(import_csv, export_path, tau=20):
+
+   This method convert the six waveforms to images at the same time
+
+   :param import_csv: the csv file which used for converting
+   :param export_path: Path to the folder used to store the images
+   :param tau: the parameter of the phase space reconstruction
+
+|
+
+.. py:function:: find_extreme_value(signal):
+
+   This method find the first extreme value of the signal
+
+   :param signal: the waveform data
+   :return: the absolute values of extreme values
+
+|
+
+.. py:function:: mkdir(path):
+
+   This method create directories if the path is not a folder
+
+   :param path: the folder you want to create
+
+|
 
 Part Two: Web Dashboard
 -----------------------------
@@ -20,9 +115,9 @@ Part Two: Web Dashboard
 and employs a selection of Dimensionality Reduction and Clustering algorithms 
 to enable interactive data exploration.*
 
-Link to the Part Two script is here_.
+Link to the `Part Two script`_.
 
-.. _here: https://github.com/zzzzqi/2022-Power-Grids/blob/main/Production/final/web_dashboard.py/
+.. _Part Two script: https://github.com/zzzzqi/2022-Power-Grids/blob/main/Production/final/web_dashboard.py/
 
 The details of all the methods used in the Part Two script are as follows: 
 

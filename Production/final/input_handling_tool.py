@@ -122,13 +122,13 @@ output_csv_columns = [
 ]
 
 
-def convert_signals(psr_dir, output_csv_filename, input_event_dir):
+def convert_signals(input_event_dir, psr_dir, output_csv_filepath):
     ## Step 1: Generate 2D images from the event signals
     mkdir(psr_dir)
     csv_suffix_length = len(".csv")
 
     # Create the output csv file with the column names
-    f = open(output_csv_filename, 'w')
+    f = open(output_csv_filepath, 'w')
     csv_writer = csv.writer(f)
     csv_writer.writerow(output_csv_columns)
 
@@ -151,11 +151,10 @@ def convert_signals(psr_dir, output_csv_filename, input_event_dir):
     f.close()
 
 
-def make_predictions(current_dir, psr_dir, output_csv_filename):
+def make_predictions(cnn_model_path, psr_dir, output_csv_filepath):
     ## Step 2: Use the CNN model to classify the images
+
     # Load the trained CNN model and the generated images
-    cnn_model_name = "basic_pqd_cnn.h5"
-    cnn_model_path = current_dir + os.sep + "trained_cnn_models" + os.sep + cnn_model_name
     cnn = models.load_model(cnn_model_path)
     event_waveform_images = tf.io.gfile.listdir(psr_dir)
 
@@ -165,7 +164,7 @@ def make_predictions(current_dir, psr_dir, output_csv_filename):
         "flickers", "harmonics", "interruptions", "interruptions_harmonics", "osc_transients",
         "sags", "sags_harmonics", "spikes", "swells", "swells_harmonics"
     ]
-    output_df = pd.read_csv(output_csv_filename, index_col=3)
+    output_df = pd.read_csv(output_csv_filepath, index_col=3)
     png_suffix_length = len(".png")
     for image_name in event_waveform_images:
         if re.search(".png$", image_name) is not None:
@@ -190,14 +189,12 @@ def make_predictions(current_dir, psr_dir, output_csv_filename):
                     target_waveform.lower() + "_" + pqd_categories[i]] = predictions[0][i]
 
     # Save the dataframe as a CSV file
-    output_df.to_csv(current_dir + os.sep + output_csv_filename)
+    output_df.to_csv(output_csv_filepath)
 
 
 # The function called by command tool
-def prediction_from_signal(input_event_dir, current_dir, output_csv_filepath):
+def prediction_from_signal(cnn_model_path, input_event_dir, output_csv_filepath):
     # Load the trained CNN model
-    cnn_model_name = "basic_pqd_cnn.h5"
-    cnn_model_path = current_dir + os.sep + "trained_cnn_models" + os.sep + cnn_model_name
     cnn = models.load_model(cnn_model_path)
 
     # Create the output csv file with the column names
@@ -292,23 +289,24 @@ def main(filepath, convert, predict, output_name, noimages):
     This tool reads CSV files as inputs, converts the waveforms to PSR images, 
     and uses the trained CNN model to generate predictions on their PQD types. \n
     The tool generates one CSV file as the output. \n
-    Use: python3 input_handling_tool_demo.py [OPTIONS] FILEPATH \n
-    Help: python3 input_handling_tool_demo.py --help
+    Use: handleinput [OPTIONS] FILEPATH \n
+    Help: handleinput --help
     """
     current_dir = filepath
-    output_csv_filename = output_name + ".csv"
+    output_csv_filepath = current_dir + os.sep + output_name + ".csv"
     input_event_dir = current_dir + os.sep + "event_data"
     psr_dir = current_dir + os.sep + "event_waveform_images"
+    cnn_model_path = current_dir + os.sep + "trained_cnn_models" + os.sep + "basic_pqd_cnn.h5"
 
     if noimages:
-        prediction_from_signal(input_event_dir, current_dir, output_csv_filename)
+        prediction_from_signal(cnn_model_path, input_event_dir, output_csv_filepath)
 
     else:
         if convert:
-            convert_signals(psr_dir, output_csv_filename, input_event_dir)
+            convert_signals(input_event_dir, psr_dir, output_csv_filepath)
 
         if predict:
-            make_predictions(current_dir, psr_dir, output_csv_filename)
+            make_predictions(cnn_model_path, psr_dir, output_csv_filepath)
 
 
 if __name__ == '__main__':
