@@ -45,14 +45,13 @@ def find_extreme_value(signal):
     end_point = 0  # The second index when the signal change its sign
     index = 0
     max_value = 0
-    signal_copy = signal * 1000
-    signal_sign = np.sign(signal_copy.astype(int))  # np.sign: return -1 if x<0; 0 if x==0; 1 if x>0
-    temporary_value = signal_sign.iloc[index]  # The sign of the first point of the signal
+    signal_sign = list(map(lambda x: 1 if x >= 0 else -1, signal * 1000))
+    temporary_value = signal_sign[index]  # The sign of the first point of the signal
 
     while index < len(signal) and count < 2:
 
-        if signal_sign.iloc[index] != temporary_value:
-            temporary_value = signal_sign.iloc[index]
+        if signal_sign[index] != temporary_value:
+            temporary_value = signal_sign[index]
             count += 1
             if count == 1:
                 start_point = index
