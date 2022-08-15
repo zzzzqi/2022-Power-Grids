@@ -88,8 +88,18 @@ in the folder where the tool is located.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="o">--</span><span class="n">predict</span> <span class="n">TRUE</span> <span class="n">FILEPATH</span>
 </pre></div>
 </div>
-<p><em>Making predictions on the input events with NO images saved:</em></p>
+<p><em>Making predictions on the input events with NO images saved (If this option is enabled,
+then the two options above will be disabled):</em></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="o">--</span><span class="n">no_images</span> <span class="n">TRUE</span> <span class="n">FILEPATH</span>
+<span class="n">which</span> <span class="n">equals</span> <span class="n">to</span><span class="p">:</span>
+<span class="n">handleinput</span> <span class="o">--</span><span class="n">no_images</span> <span class="n">TRUE</span> <span class="o">--</span><span class="n">convert</span> <span class="n">TRUE</span> <span class="n">FILEPATH</span>
+<span class="n">handleinput</span> <span class="o">--</span><span class="n">no_images</span> <span class="n">TRUE</span> <span class="o">--</span><span class="n">predict</span> <span class="n">TRUE</span> <span class="n">FILEPATH</span>
+</pre></div>
+</div>
+<p><em>Possible to simply use “.” to use the local directory as the FILEPATH:</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="o">--</span><span class="n">convert</span> <span class="n">TRUE</span> <span class="o">.</span>
+<span class="n">handleinput</span> <span class="o">--</span><span class="n">predict</span> <span class="n">TRUE</span> <span class="o">.</span>
+<span class="n">handleinput</span> <span class="o">--</span><span class="n">no_images</span> <span class="n">TRUE</span> <span class="o">.</span>
 </pre></div>
 </div>
 </section>

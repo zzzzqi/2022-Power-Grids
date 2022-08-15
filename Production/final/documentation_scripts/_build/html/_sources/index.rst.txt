@@ -56,19 +56,25 @@ Examples of using the tool are as follows.
 
 *Converting input events into 2D PSR images:*
 ::
-   handleinput --convert TRUE .
+   handleinput --convert TRUE FILEPATH
 
 *Making predictions on the generated 2D PSR images:*
 ::
-   handleinput --predict TRUE .
+   handleinput --predict TRUE FILEPATH
 
-*Making predictions on the input events with NO images saved(If this option is enabled, 
+*Making predictions on the input events with NO images saved (If this option is enabled, 
 then the two options above will be disabled):*
 ::
-   handleinput --no_images TRUE .
+   handleinput --no_images TRUE FILEPATH
    which equals to:
-   handleinput --no_images TRUE --convert TRUE .
-   handleinput --no_images TRUE --predict TRUE .
+   handleinput --no_images TRUE --convert TRUE FILEPATH
+   handleinput --no_images TRUE --predict TRUE FILEPATH
+
+*Possible to simply use "." to use the local directory as the FILEPATH:*
+::
+   handleinput --convert TRUE .
+   handleinput --predict TRUE .
+   handleinput --no_images TRUE .
 
 Methods:
 ^^^^^^^^
