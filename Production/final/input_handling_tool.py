@@ -82,8 +82,7 @@ def identify_max_value(signal):
 # Define the helper function for converting all the six signal waveforms into 2D PSR images
 def phase_space_graph(import_csv, export_path, tau=20):
     # Load data from the csv file, where index_col is the selected column for the row labels
-    path = "event_data" + os.sep + import_csv
-    signal = pd.read_csv(path, index_col=3)
+    signal = pd.read_csv(import_csv, index_col=3)
 
     # Initialise the image plots
     plt.style.use("grayscale")
@@ -132,7 +131,8 @@ def convert_signals(input_event_dir, psr_dir, output_csv_filepath):
             export_image_name = input_event_file[
                 :len(input_event_file) - csv_suffix_length]
             export_path = psr_dir + os.sep + export_image_name
-            phase_space_graph(input_event_file, export_path)
+            input_event_path = input_event_dir + os.sep + input_event_file
+            phase_space_graph(input_event_path, export_path)
 
             input_event_path = input_event_dir + os.sep + input_event_file
             input_event_signals = pd.read_csv(input_event_path, index_col=3)
@@ -305,11 +305,12 @@ def main(filepath, convert, predict, output_name, noimages):
     cnn_model_path = current_dir + os.sep + "trained_cnn_models" \
          + os.sep + "basic_pqd_cnn.h5"
 
-    if convert:
-        convert_signals(input_event_dir, psr_dir, output_csv_filepath)
-    if predict:
-        make_predictions(cnn_model_path, psr_dir, output_csv_filepath)
-    if noimages:
+    if not noimages:
+        if convert:
+            convert_signals(input_event_dir, psr_dir, output_csv_filepath)
+        if predict:
+            make_predictions(cnn_model_path, psr_dir, output_csv_filepath)
+    else:
         predict_from_events(cnn_model_path, input_event_dir, output_csv_filepath)
 
 if __name__ == '__main__':

@@ -62,9 +62,13 @@ Examples of using the tool are as follows.
 ::
    handleinput --predict TRUE FILEPATH
 
-*Making predictions on the input events with NO images saved:*
+*Making predictions on the input events with NO images saved(If this option is enabled, 
+then the two options above will be disabled):*
 ::
    handleinput --no_images TRUE FILEPATH
+   which equals to:
+   handleinput --no_images TRUE --convert TRUE FILEPATH
+   handleinput --no_images TRUE --predict TRUE FILEPATH
 
 Methods:
 ^^^^^^^^
