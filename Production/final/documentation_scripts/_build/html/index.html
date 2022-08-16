@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Project documentation &#8212; Smart Power Grids 1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -71,7 +71,7 @@ in the folder where the tool is located.</p>
 <h4>C. Usage:<a class="headerlink" href="#c-usage" title="Permalink to this heading">¶</a></h4>
 <p>These are the instructions on how to use the the tool.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Use</span><span class="p">:</span>
-   <span class="n">handleinput</span> <span class="p">[</span><span class="n">OPTIONS</span><span class="p">]</span> <span class="n">FILEPATH</span>
+   <span class="n">handleinput</span> <span class="n">FILEPATH</span> <span class="p">[</span><span class="o">--</span><span class="n">convert</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">predict</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">no_images</span><span class="p">]</span>
 <span class="n">Help</span><span class="p">:</span>
    <span class="n">handleinput</span> <span class="o">--</span><span class="n">help</span>
 </pre></div>
@@ -81,25 +81,25 @@ in the folder where the tool is located.</p>
 <h4>D. Examples:<a class="headerlink" href="#d-examples" title="Permalink to this heading">¶</a></h4>
 <p>Examples of using the tool are as follows.</p>
 <p><em>Converting input events into 2D PSR images:</em></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="o">--</span><span class="n">convert</span> <span class="n">TRUE</span> <span class="n">FILEPATH</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="n">FILEPATH</span> <span class="o">--</span><span class="n">convert</span>
 </pre></div>
 </div>
 <p><em>Making predictions on the generated 2D PSR images:</em></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="o">--</span><span class="n">predict</span> <span class="n">TRUE</span> <span class="n">FILEPATH</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="n">FILEPATH</span> <span class="o">--</span><span class="n">predict</span>
 </pre></div>
 </div>
 <p><em>Making predictions on the input events with NO images saved (If this option is enabled,
 then the two options above will be disabled):</em></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="o">--</span><span class="n">no_images</span> <span class="n">TRUE</span> <span class="n">FILEPATH</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="n">FILEPATH</span> <span class="o">--</span><span class="n">no_images</span>
 <span class="n">which</span> <span class="n">equals</span> <span class="n">to</span><span class="p">:</span>
-<span class="n">handleinput</span> <span class="o">--</span><span class="n">no_images</span> <span class="n">TRUE</span> <span class="o">--</span><span class="n">convert</span> <span class="n">TRUE</span> <span class="n">FILEPATH</span>
-<span class="n">handleinput</span> <span class="o">--</span><span class="n">no_images</span> <span class="n">TRUE</span> <span class="o">--</span><span class="n">predict</span> <span class="n">TRUE</span> <span class="n">FILEPATH</span>
+<span class="n">handleinput</span> <span class="n">FILEPATH</span> <span class="o">--</span><span class="n">no_images</span> <span class="o">--</span><span class="n">convert</span>
+<span class="n">handleinput</span> <span class="n">FILEPATH</span> <span class="o">--</span><span class="n">no_images</span> <span class="o">--</span><span class="n">predict</span>
 </pre></div>
 </div>
 <p><em>Possible to simply use “.” to use the local directory as the FILEPATH:</em></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="o">--</span><span class="n">convert</span> <span class="n">TRUE</span> <span class="o">.</span>
-<span class="n">handleinput</span> <span class="o">--</span><span class="n">predict</span> <span class="n">TRUE</span> <span class="o">.</span>
-<span class="n">handleinput</span> <span class="o">--</span><span class="n">no_images</span> <span class="n">TRUE</span> <span class="o">.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="o">.</span> <span class="o">--</span><span class="n">convert</span>
+<span class="n">handleinput</span> <span class="o">.</span> <span class="o">--</span><span class="n">predict</span>
+<span class="n">handleinput</span> <span class="o">.</span> <span class="o">--</span><span class="n">no_images</span>
 </pre></div>
 </div>
 </section>
@@ -619,7 +619,7 @@ the event waveforms of the selected similar event(s)</p>
       &copy;Group F Toumetis - MSc CS Final Project - University of Bristol.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

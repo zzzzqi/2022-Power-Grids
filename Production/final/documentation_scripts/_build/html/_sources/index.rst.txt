@@ -46,7 +46,7 @@ C. Usage:
 These are the instructions on how to use the the tool. 
 ::
    Use: 
-      handleinput [OPTIONS] FILEPATH 
+      handleinput FILEPATH [--convert] [--predict] [--no_images]
    Help: 
       handleinput --help
 
@@ -56,25 +56,25 @@ Examples of using the tool are as follows.
 
 *Converting input events into 2D PSR images:*
 ::
-   handleinput --convert TRUE FILEPATH
+   handleinput FILEPATH --convert
 
 *Making predictions on the generated 2D PSR images:*
 ::
-   handleinput --predict TRUE FILEPATH
+   handleinput FILEPATH --predict
 
 *Making predictions on the input events with NO images saved (If this option is enabled, 
 then the two options above will be disabled):*
 ::
-   handleinput --no_images TRUE FILEPATH
+   handleinput FILEPATH --no_images
    which equals to:
-   handleinput --no_images TRUE --convert TRUE FILEPATH
-   handleinput --no_images TRUE --predict TRUE FILEPATH
+   handleinput FILEPATH --no_images --convert
+   handleinput FILEPATH --no_images --predict
 
 *Possible to simply use "." to use the local directory as the FILEPATH:*
 ::
-   handleinput --convert TRUE .
-   handleinput --predict TRUE .
-   handleinput --no_images TRUE .
+   handleinput . --convert
+   handleinput . --predict
+   handleinput . --no_images
 
 Methods:
 ^^^^^^^^

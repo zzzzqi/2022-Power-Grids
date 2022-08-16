@@ -270,15 +270,15 @@ def predict_from_events(cnn_model_path, input_event_dir, output_csv_filepath):
 @click.command()
 @click.option(
     "--convert",
-    default=False,
+    is_flag=True,
     help="Convert input events to 2D PSR images.")
 @click.option(
     "--predict",
-    default=False,
+    is_flag=True,
     help="Make predictions on the PQD types of each signal.")
 @click.option(
-    '--no_images', 'noimages',
-    default=False,
+    '--images/--no_images',
+    default=True,
     help="Make predictions on input events with NO images saved")
 @click.option(
     '--output_name',
@@ -288,7 +288,7 @@ def predict_from_events(cnn_model_path, input_event_dir, output_csv_filepath):
     "filepath",
     type=click.Path(exists=True))
 
-def main(filepath, convert, predict, output_name, noimages):
+def main(filepath, convert, predict, output_name, images):
     """
     This is the command line tool for handling input events. \n
     This tool reads CSV files as inputs, converts the waveforms to 2D PSR images, 
@@ -305,7 +305,7 @@ def main(filepath, convert, predict, output_name, noimages):
     cnn_model_path = current_dir + os.sep + "trained_cnn_models" \
          + os.sep + "basic_pqd_cnn.h5"
 
-    if not noimages:
+    if images:
         if convert:
             convert_signals(input_event_dir, psr_dir, output_csv_filepath)
         if predict:
