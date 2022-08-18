@@ -1,0 +1,634 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Project documentation &#8212; Smart Power Grids 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="project-documentation">
+<h1>Project documentation<a class="headerlink" href="#project-documentation" title="Permalink to this heading">¶</a></h1>
+<section id="installing-dependencies-for-this-project">
+<h2>Installing dependencies for this project:<a class="headerlink" href="#installing-dependencies-for-this-project" title="Permalink to this heading">¶</a></h2>
+<p>This is how to install all the required dependencies for this project.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+</section>
+<section id="part-one-input-handling-tool">
+<h2>Part One: Input Handling Tool<a class="headerlink" href="#part-one-input-handling-tool" title="Permalink to this heading">¶</a></h2>
+<p>This is a tool to read power events, analyse their signal waveforms,
+and classify them according to IEEE standards, enabled by the use
+of a Convolutional Neural Network (CNN).</p>
+<p>Link to the <a class="reference external" href="https://github.com/zzzzqi/2022-Power-Grids/blob/main/Production/final/input_handling_tool.py/">Part One script</a>.</p>
+<section id="how-to-use-the-tool">
+<h3>How to use the tool:<a class="headerlink" href="#how-to-use-the-tool" title="Permalink to this heading">¶</a></h3>
+<section id="a-operating-logic">
+<h4>A. Operating logic:<a class="headerlink" href="#a-operating-logic" title="Permalink to this heading">¶</a></h4>
+<p>The tool would read input events stored in the sub-directory “event_data”.
+It would use the trained CNN model stored in the sub-directory
+“trained_cnn_models”. By default, the model used is “basic_pqd_cnn.h5”.
+After running the tool, it would create a sub-directory
+“event_waveform_images” to store the generated 2D PSR images
+(if the no images option is not chosen), and generate an output CSV file
+“cnn_output.csv”.</p>
+</section>
+<section id="b-preparation">
+<h4>B. Preparation:<a class="headerlink" href="#b-preparation" title="Permalink to this heading">¶</a></h4>
+<p>After installing the “click” library, run the following command
+in the folder where the tool is located.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">editable</span> <span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="c-usage">
+<h4>C. Usage:<a class="headerlink" href="#c-usage" title="Permalink to this heading">¶</a></h4>
+<p>These are the instructions on how to use the the tool.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Use</span><span class="p">:</span>
+   <span class="n">handleinput</span> <span class="n">FILEPATH</span> <span class="p">[</span><span class="o">--</span><span class="n">convert</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">predict</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">no_images</span><span class="p">]</span>
+<span class="n">Help</span><span class="p">:</span>
+   <span class="n">handleinput</span> <span class="o">--</span><span class="n">help</span>
+</pre></div>
+</div>
+</section>
+<section id="d-examples">
+<h4>D. Examples:<a class="headerlink" href="#d-examples" title="Permalink to this heading">¶</a></h4>
+<p>Examples of using the tool are as follows.</p>
+<p><em>Converting input events into 2D PSR images:</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="n">FILEPATH</span> <span class="o">--</span><span class="n">convert</span>
+</pre></div>
+</div>
+<p><em>Making predictions on the generated 2D PSR images:</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="n">FILEPATH</span> <span class="o">--</span><span class="n">predict</span>
+</pre></div>
+</div>
+<p><em>Making predictions on the input events with NO images saved (If this option is enabled,
+then the two options above will be disabled):</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="n">FILEPATH</span> <span class="o">--</span><span class="n">no_images</span>
+<span class="n">which</span> <span class="n">equals</span> <span class="n">to</span><span class="p">:</span>
+<span class="n">handleinput</span> <span class="n">FILEPATH</span> <span class="o">--</span><span class="n">no_images</span> <span class="o">--</span><span class="n">convert</span>
+<span class="n">handleinput</span> <span class="n">FILEPATH</span> <span class="o">--</span><span class="n">no_images</span> <span class="o">--</span><span class="n">predict</span>
+</pre></div>
+</div>
+<p><em>Possible to simply use “.” to use the local directory as the FILEPATH:</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handleinput</span> <span class="o">.</span> <span class="o">--</span><span class="n">convert</span>
+<span class="n">handleinput</span> <span class="o">.</span> <span class="o">--</span><span class="n">predict</span>
+<span class="n">handleinput</span> <span class="o">.</span> <span class="o">--</span><span class="n">no_images</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="methods">
+<h3>Methods:<a class="headerlink" href="#methods" title="Permalink to this heading">¶</a></h3>
+<p>The details of all the methods used in the Part One script are as follows:</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">input_handling_tool.main(filepath,</span> <span class="pre">convert,</span> <span class="pre">predict,</span> <span class="pre">output_name,</span> <span class="pre">noimages):</span></span></dt>
+<dd><p>This method executes the script according to the selected parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filepath</strong> – the filepath of the script</p></li>
+<li><p><strong>convert</strong> – the command line option to convert the signals
+to 2D PSR images</p></li>
+<li><p><strong>predict</strong> – the command line option to make predictions on the
+PQD types of each signal</p></li>
+<li><p><strong>output_name</strong> – the name of the output CSV file</p></li>
+<li><p><strong>noimages</strong> – the command line option to make predictions on input
+events with NO images saved</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">input_handling_tool.convert_signals(</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">input_event_dir,</span> <span class="pre">psr_dir,</span> <span class="pre">output_csv_filepath):</span></span></dt>
+<dd><p>This method converts input signals into the 2D PSR images.
+This is one of the command line tool options.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_event_dir</strong> – the directory of the input event CSV files</p></li>
+<li><p><strong>psr_dir</strong> – the directory of the 2D PSR images</p></li>
+<li><p><strong>output_csv_filepath</strong> – the directory of the output CSV file to
+be stored</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">input_handling_tool.make_predictions(</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cnn_model_path,</span> <span class="pre">psr_dir,</span> <span class="pre">output_csv_filepath):</span></span></dt>
+<dd><p>This method uses the CNN model to make predictions on the 2D PSR images,
+located in the “psr_dir” parameter.
+This is one of the command line tool options.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cnn_model_path</strong> – the directory of the CNN model to be used</p></li>
+<li><p><strong>psr_dir</strong> – the directory of the 2D PSR images</p></li>
+<li><p><strong>output_csv_filepath</strong> – the directory of the output CSV file to
+be stored</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">input_handling_tool.predict_from_events(</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cnn_model_path,</span> <span class="pre">input_event_dir,</span> <span class="pre">output_csv_filepath):</span></span></dt>
+<dd><p>This method uses the CNN model to make predictions on the input events,
+with NO images saved locally.
+This is one of the command line tool options.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cnn_model_path</strong> – the directory of the CNN model to be used</p></li>
+<li><p><strong>input_event_dir</strong> – the directory of the input event CSV files</p></li>
+<li><p><strong>output_csv_filepath</strong> – the directory of the output CSV file to
+be stored</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">input_handling_tool.phase_space_graph(</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">import_csv,</span> <span class="pre">export_path,</span> <span class="pre">tau=20):</span></span></dt>
+<dd><p>This method is the helper function for converting all the six
+signal waveforms into 2D PSR images.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>import_csv</strong> – the input event CSV file</p></li>
+<li><p><strong>export_path</strong> – the directory for storing the 2D PSR images</p></li>
+<li><p><strong>tau</strong> – the time lag parameter for PSR, set to be 20 on default</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">input_handling_tool.identify_max_value(signal):</span></span></dt>
+<dd><p>This method is the helper function for identifying the normal
+max value of the signal waveform.
+First it detects the transformations of the waveforms from positive
+to negative, and vice versa, twice.
+Then it identifies the max value in this specific interval in the
+waveforms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>signal</strong> – the waveform data</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the normal max value of the signal waveform</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">input_handling_tool.mkdir(path):</span></span></dt>
+<dd><p>This method is the helper function for creating a specific directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> – the specific directory to be created</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+</section>
+<section id="part-two-web-dashboard">
+<h2>Part Two: Web Dashboard<a class="headerlink" href="#part-two-web-dashboard" title="Permalink to this heading">¶</a></h2>
+<p>This is a web dashboard that reads the output file from the CNN,
+display the events, and employs a selection of Dimensionality Reduction
+and Clustering algorithms to enable interactive data exploration.</p>
+<p>Link to the <a class="reference external" href="https://github.com/zzzzqi/2022-Power-Grids/blob/main/Production/final/web_dashboard.py/">Part Two script</a>.</p>
+<section id="how-to-use-the-dashboard">
+<h3>How to use the dashboard:<a class="headerlink" href="#how-to-use-the-dashboard" title="Permalink to this heading">¶</a></h3>
+<section id="id1">
+<h4>A. Operating logic:<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h4>
+<p>The web dashboard requires the user to upload the output CSV file generated
+from the Part One input handling tool.
+After the dashboard has started running, use the upload button on its
+sidebar to upload the said CSV file to enable data-exploration.</p>
+</section>
+<section id="b-usage">
+<h4>B. Usage:<a class="headerlink" href="#b-usage" title="Permalink to this heading">¶</a></h4>
+<p>This is the instruction on how to run the web dashboard.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Use</span><span class="p">:</span>
+   <span class="n">panel</span> <span class="n">serve</span> <span class="n">web_dashboard</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">show</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id2">
+<h3>Methods:<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
+<p>The details of all the methods used in the Part Two script are as follows:</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">web_dashboard.dynamic_env(read_file):</span></span></dt>
+<dd><p>This method reads the CNN output file as the input
+and uses it for the dynamic environment of the dashboard.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>read_file</strong> – the CNN output file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the dynamic environment of the dashboard</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">web_dashboard.dynamic_env.data_exploration(</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">dr_value,</span> <span class="pre">clustering_value,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">basic_x_value,</span> <span class="pre">basic_y_value,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">pca_x_value,</span> <span class="pre">pca_y_value,</span> <span class="pre">pca_whiten_value,</span> <span class="pre">pca_svd_solver_value,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">umap_x_value,</span> <span class="pre">umap_y_value,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">tsne_x_value,</span> <span class="pre">tsne_y_value,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">umap_n_neighbors_value,</span> <span class="pre">umap_min_dist_value,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">tsne_perplexity_value,</span> <span class="pre">tsne_early_exaggeration_value,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">tsne_learning_rate_value,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">k_means_n_clusters,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">dbscan_max_distance_value,</span> <span class="pre">dbscan_n_samples_value,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">agg_clustering_n_clusters,</span> <span class="pre">agg_clustering_linkage_value,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">basic_similar_events_x_value,</span> <span class="pre">basic_similar_events_y_value,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">dr_similar_events_x_value,</span> <span class="pre">dr_similar_events_y_value):</span></span></dt>
+<dd><p>This method builds the dynamic data-exploration pane.
+It depends on the selected parameters on the sidebar of the dashboard.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dr_value</strong> – the selected Dimensionality Reduction algo</p></li>
+<li><p><strong>clustering_value</strong> – the selected Clustering algo</p></li>
+<li><p><strong>basic_x_value</strong> – the selected basic x-axis</p></li>
+<li><p><strong>basic_y_value</strong> – the selected basic x-axis</p></li>
+<li><p><strong>pca_x_value</strong> – the selected x-axis for PCA dataframes</p></li>
+<li><p><strong>pca_y_value</strong> – the selected y-axis for PCA dataframes</p></li>
+<li><p><strong>pca_whiten_value</strong> – the selected whiten value for PCA algo</p></li>
+<li><p><strong>pca_svd_solver_value</strong> – the selected svd solver value
+for PCA algo</p></li>
+<li><p><strong>umap_x_value</strong> – the selected x-axis for UMAP dataframes</p></li>
+<li><p><strong>umap_y_value</strong> – the selected y-axis for UMAP dataframes</p></li>
+<li><p><strong>tsne_x_value</strong> – the selected x-axis for TSNE dataframes</p></li>
+<li><p><strong>tsne_y_value</strong> – the selected y-axis for TSNE dataframes</p></li>
+<li><p><strong>umap_n_neighbors_value</strong> – the selected n_neighbors value
+for UMAP algo</p></li>
+<li><p><strong>umap_min_dist_value</strong> – the selected min_dist value
+for UMAP algo</p></li>
+<li><p><strong>tsne_perplexity_value</strong> – the selected perplexity value
+for TSNE algo</p></li>
+<li><p><strong>tsne_early_exaggeration_value</strong> – the selected early exaggeration
+value for TSNE algo</p></li>
+<li><p><strong>tsne_learning_rate_value</strong> – the selected learning rate value
+for TSNE algo</p></li>
+<li><p><strong>k_means_n_clusters</strong> – the selected number of clusters
+for K-Means algo</p></li>
+<li><p><strong>dbscan_max_distance_value</strong> – the selected max_distance value
+for DBSCAN algo</p></li>
+<li><p><strong>dbscan_n_samples_value</strong> – the selected n_samples value
+for DBSCAN algo</p></li>
+<li><p><strong>agg_clustering_n_clusters</strong> – the selected number of clusters
+for Agglomerative Clustering</p></li>
+<li><p><strong>agg_clustering_linkage_value</strong> – the selected linakge value
+for Agglomerative Clustering</p></li>
+<li><p><strong>basic_similar_events_x_value</strong> – the selected interval of x-value
+for identifying similar events in basic dataframes</p></li>
+<li><p><strong>basic_similar_events_y_value</strong> – the selected interval of y-value
+for identifying similar events in basic dataframes</p></li>
+<li><p><strong>dr_similar_events_x_value</strong> – the selected interval of x-value
+for identifying similar events in dataframes
+with Dimensionality Reduction algos</p></li>
+<li><p><strong>dr_similar_events_y_value</strong> – the selected interval of y-value
+for identifying similar events in dataframes
+with Dimensionality Reduction algos</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the dynamic data-exploration pane that renders the
+scatter-plot of the loaded events</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">web_dashboard.dynamic_env.plot_configuration(</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">dr_value,</span> <span class="pre">clustering_value):</span></span></dt>
+<dd><p>This method builds the dynamic widgetbox for plot configuration.
+It depends on the selected Dimensionality Reduction and Clustering algos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dr_value</strong> – the selected Dimensionality Reduction algo</p></li>
+<li><p><strong>clustering_value</strong> – the selected Clustering algo</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the dynamic widgetbox for plot configuration, listing
+the axis options for the scatter-plot, and
+the parameter options for the selected algos</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">web_dashboard.dynamic_env.similar_events_configuration(</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">dr_value,</span> <span class="pre">clustering_value):</span></span></dt>
+<dd><p>This method builds the dynamic widgetbox for similar events configuration.
+It depends on the selected Dimensionality Reduction and Clustering algos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dr_value</strong> – the selected Dimensionality Reduction algo</p></li>
+<li><p><strong>clustering_value</strong> – the selected Clustering algo</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the dynamic widgetbox for configuring similar events, listing
+the options for changing how similar events are identified</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">web_dashboard.dynamic_env.identify_top_predictions(</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">df,</span> <span class="pre">event_id):</span></span></dt>
+<dd><p>This method identifies the top PQD predictions of the signal waveforms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – the dataframe of the selected event</p></li>
+<li><p><strong>event_id</strong> – the id of the selected event</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the dictionary where waveform names are keys,
+and the arrays of their top PQD types and prediction scores
+are the values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">web_dashboard.dynamic_env.build_event_page(selection,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">selected_df,</span> <span class="pre">x_axis,</span> <span class="pre">y_axis,</span> <span class="pre">clusters):</span></span></dt>
+<dd><p>This method builds the dynamic event page.
+It depends on the selected event on the data-exploration pane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>selection</strong> – the selected event on the data-exploration pane</p></li>
+<li><p><strong>selected_df</strong> – the dataframe of the selected event and
+its similar events modified by the selected axes and algos</p></li>
+<li><p><strong>x_axis</strong> – the selected x-axis</p></li>
+<li><p><strong>y_axis</strong> – the selected y-axis</p></li>
+<li><p><strong>clusters</strong> – the selected Clustering algo</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the dynamic event page that shows the event data, and
+the event waveforms of the selected event</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">web_dashboard.dynamic_env.build_similar_event_page(</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">selection,</span> <span class="pre">selected_df,</span> <span class="pre">x_axis,</span> <span class="pre">y_axis,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">clusters,</span> <span class="pre">similar_events_x_parameter,</span> <span class="pre">similar_events_y_parameter):</span></span></dt>
+<dd><p>This method builds the dynamic page of similar events.
+It depends on the selected event on the data-exploration pane, and
+the parameters chosen for configuring the similar event selection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>selection</strong> – the selected event on the data-exploration pane</p></li>
+<li><p><strong>selected_df</strong> – the dataframe of the selected event and
+its similar events modified by the selected axes and algos</p></li>
+<li><p><strong>x_axis</strong> – the selected x-axis</p></li>
+<li><p><strong>y_axis</strong> – the selected y-axis</p></li>
+<li><p><strong>clusters</strong> – the selected Clustering algo</p></li>
+<li><p><strong>similar_events_x_parameter</strong> – the selected x-value for
+configuring the similar events</p></li>
+<li><p><strong>similar_events_y_parameter</strong> – the selected y-value for
+configuring the similar events</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the dynamic page of similar events that shows the
+Tabulator object of the similar events identified</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">web_dashboard.dynamic_env.build_similar_event_page._download_callback():</span></span></dt>
+<dd><p>The method is a callback activated by the download button.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the CSV file of the summary of the selected events</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">web_dashboard.dynamic_env.build_similar_event_page.build_similar_events(_):</span></span></dt>
+<dd><p>This method returns the dynamic event page(s) for the selected similar
+event(s).
+It depends on the similar events selected by the user on the
+Tabulator object, and the clicking of the display button.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the dynamic event page(s) that show(s) the event data, and
+the event waveforms of the selected similar event(s)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">Smart Power Grids</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;Group F Toumetis - MSc CS Final Project - University of Bristol.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
