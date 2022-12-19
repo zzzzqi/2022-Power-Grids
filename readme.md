@@ -6,4 +6,6 @@ Client: Dr. Edward Rowland from Toumetis
 
 Supervisor: Professor Kerstin Eder
 
+Transfer learning part: https://github.com/zzzzqi/IndividualProject_BasedOn__SmartPowerGrid
+
 This is the GitHub repo of this project.
